@@ -6,32 +6,49 @@ A tiny tool that builds a ready-to-use Microsoft Access database, already filled
 
 I made this because setting up dummy Access databases by hand is slow, boring, and honestly a waste of good coffee. So I turned it into a system.
 
-👉 **Live tool:** `https://YOUR-USERNAME.github.io/access-db-generator/`
-*(swap in your own link once Pages is on)*
+👉 **Live tool:** `https://YOUR-USERNAME.github.io/access-db-generator/](https://jrmdg31.github.io/SampleDbGenerator---For-ms-access---by-jerome/`
+---
+
+## 🎬 See it in action
+
+  OPTION 2 (YouTube): replace VIDEO_ID with your video's ID, and use a screenshot as the thumbnail:
+  [![Watch the demo](https://img.youtube.com/vi/OczU0eB0NvQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=OczU0eB0NvQ)
+  -->
+*Short on time? The video shows the whole flow in under a minute: pick fields, generate, double-click, done.*
 
 ---
 
 ## What it does
 
-You pick what your table should look like. The tool generates the data and hands you a file that builds the Access database for you.
+You design your table. The tool generates the data and hands you a file that builds the Access database for you.
 
-- **Choose your fields:** primary key, first name, middle name, last name, age, gender, location, role
+- **Build your own table:** start with First Name and Last Name, then add whatever you need
+- **50+ ready-made presets:** personal, employment, contact, location, financial, and system/audit fields. Tap to add or remove
+- **Custom fields:** add your own and pick any Access data type (Short Text, Long Text, Number, Date/Time, Currency, AutoNumber, Yes/No, OLE Object, Hyperlink, Lookup Wizard)
+- **Drag to reorder:** grab the dotted handle and slide fields into place (arrow keys work too)
 - **Name the columns your way:** `FirstName`, `first_name`, `First Name`, or anything you type
-- **Control the data:** row count (up to 50,000), age range, your own lists of genders, locations, and roles
+- **Control the data:** row count (up to 50,000), % of empty cells, and your own lists of genders, job titles, and locations
 - **Pick the format:** `.mdb` for old Access (2000-2003), `.accdb` for 2007 and newer
-- **Live preview:** see the first rows, the row/column count, an estimated size, and the `CREATE TABLE` SQL as you tweak
+- **Live preview:** see the first rows, the row and column count, an estimated size, and the `CREATE TABLE` SQL as you tweak
 - **CSV option:** don't want the script? Download a CSV and import it into Access yourself
 - **Runs 100% in your browser.** Nothing gets uploaded anywhere
 
 ## How to use it
 
 1. Open the tool.
-2. Set your file name, table name, fields, and data options.
-3. Click **Generate & download Access builder**. You'll get a `.vbs` file.
-4. Put that file in a folder and **double-click it**.
-5. Your `.mdb` / `.accdb` shows up in the same folder, table and rows included. Done.
+2. Set your file name, table name, and format.
+3. Build your fields: tap presets, add custom ones, choose a data type for each, and drag them into the order you want.
+4. Click **Generate & download Access builder**. You'll get a `.vbs` file.
+5. Put that file in a folder and **double-click it**.
+6. Your `.mdb` / `.accdb` shows up in the same folder, table and rows included. Done.
 
 **Shortcut:** `Ctrl + Enter` generates the builder.
+
+### Good to know about data types
+
+- **AutoNumber:** Access allows only one per table. The tool will warn you if you add a second.
+- **OLE Object:** the column is created, but left empty (there's no sample file to put in it).
+- **Hyperlink and Lookup Wizard:** these use extra Access properties, set on a best-effort basis. If one doesn't apply on your machine, the column still works as plain text.
 
 ### Why a `.vbs` file and not the database directly?
 
@@ -76,6 +93,8 @@ The tool also has this whole guide built in. Hit **"Blocked? Fix it"** at the to
 
 If you get *"Could not create the database,"* switch to `.mdb` and try again. If it still fails, that PC probably needs the free [Microsoft Access Database Engine](https://www.microsoft.com/en-us/download/details.aspx?id=54920).
 
+Big tables (tens of thousands of rows) can take a while on older computers. Start small, then scale up.
+
 ---
 
 ## Run it locally
@@ -104,7 +123,7 @@ Then open `index.html` in any browser. That's it. It works offline.
 This is a small project, but it gets better with more hands (and more coffee). I'd love your help with anything, big or small:
 
 - 🐛 **Found a bug?** Open an issue.
-- 💡 **Got an idea?** New fields, new data types, better fake data, more languages. Tell me.
+- 💡 **Got an idea?** New presets, new data types, better fake data, more languages. Tell me.
 - 🧪 **Tested it on an old machine?** Tell me what worked and what didn't. That's gold.
 - ✍️ **Spot a typo or want clearer instructions?** Send a pull request.
 - 🎨 **Want to improve the design?** Go for it.
