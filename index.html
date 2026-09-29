@@ -358,6 +358,7 @@ $('flist').addEventListener('pointerdown',e=>{
   const g=e.target.closest('.grip');if(!g)return;e.preventDefault();
   const el=g.parentNode,rows=[].slice.call($('flist').children),from=rows.indexOf(el);
   dg={el:el,rows:rows,from:from,to:from,step:el.offsetHeight+8,h:el.offsetHeight,y0:e.clientY,top0:el.offsetTop,mids:rows.map(r=>r.offsetTop+r.offsetHeight/2)};
+  el.classList.remove('new');
   el.classList.add('drag');
   try{g.setPointerCapture(e.pointerId);}catch(x){}
 });
