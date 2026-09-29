@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Access DB Generator</title>
+<style>
+  :root{--bg:#141210;--tx:#f3ece2;--mut:#8f877c;--ac:#c98a4b;--bd:#2a2622;--in:#1b1815}
+  *{box-sizing:border-box}
+  html{color-scheme:dark}
+  body{margin:0;min-height:100vh;font:15px/1.6 Inter,"Segoe UI",Arial,sans-serif;color:var(--tx);
+    background:radial-gradient(ellipse 60% 45% at var(--mx,62%) var(--my,18%),rgba(140,80,30,.22),transparent 70%),var(--bg);background-attachment:fixed;padding:0 24px 60px;counter-reset:sec}
+  .wrap{max-width:1100px;margin:auto}
+  .top{display:flex;justify-content:space-between;align-items:center;padding:22px 0;border-bottom:1px solid var(--bd);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+  .top b{font-size:20px;letter-spacing:-.03em;text-transform:none;color:var(--tx)}
+  .top i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ac);margin-right:8px}
+  .hero{padding:80px 0 40px}
+  .eyebrow{display:flex;align-items:center;gap:14px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+  .eyebrow:before{content:"";width:32px;height:1px;background:var(--mut)}
+  h1{margin:18px 0 0;font-size:clamp(44px,8vw,96px);line-height:1;font-weight:700;letter-spacing:-.045em}
+  h1 span{display:block;font-size:.42em;letter-spacing:-.03em;color:var(--mut);margin-top:10px;font-weight:600}
+  p.sub{max-width:560px;margin:26px 0 0;font-size:19px;line-height:1.5;color:#d8d0c4}
+  .meta{margin-top:22px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+  .meta em{font-style:normal;color:var(--ac);margin-right:10px;font-size:14px;letter-spacing:0}
+  .card{border-top:1px solid var(--bd);padding:34px 0}
+  .card h2{margin:0 0 22px;font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--tx);counter-increment:sec}
+  .card h2:before{content:"0" counter(sec) " / ";color:var(--ac)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:26px}
+  label{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
+  select,input[type=text],input[type=number],textarea{width:100%;padding:8px 0;border:0;border-bottom:1px solid #3a342e;border-radius:0;background:transparent;color:var(--tx);font:inherit;outline:none;transition:border-color .2s}
+  select option{background:var(--in)}
+  textarea{min-height:64px;resize:vertical}
+  select:focus,input:focus,textarea:focus{border-bottom-color:var(--ac)}
+  input[type=checkbox]{accent-color:var(--ac);width:16px;height:16px;flex:none}
+  .fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:0 40px}
+  .frow{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--bd);padding:10px 0;margin:0;color:var(--tx);letter-spacing:0;text-transform:none;font-size:14px}
+  .frow span{flex:0 0 118px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+  .frow input[type=text]{padding:4px 0}
+  .row{display:flex;gap:34px;flex-wrap:wrap;align-items:center}
+  button{background:none;border:0;color:var(--tx);font:inherit;font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;padding:14px 22px;border:1px solid var(--ac);transition:.2s}
+  button:after{content:" \2192";color:var(--ac);transition:.2s}
+  button:hover{background:var(--ac);color:#141210}
+  button:hover:after{color:#141210}
+  button.alt{border:0;padding:14px 0;color:var(--mut)}
+  button.alt:hover{background:none;color:var(--tx)}
+  #btnCsv:after{content:" \2193"}
+  #btnPrev:after{content:" \21BB"}
+  .note{font-size:12px;letter-spacing:.04em;color:var(--mut);max-width:680px}
+  .tbl{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th,td{padding:10px 14px 10px 0;border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
+  th{font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ac)}
+  .foot{border-top:1px solid var(--bd);padding-top:22px;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+  /* --- motion & interactivity --- */
+  @keyframes up{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+  @keyframes rowin{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
+  @keyframes flash{from{color:var(--ac)}to{color:var(--mut)}}
+  @keyframes load{from{width:0}to{width:100%}}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,138,75,.6)}50%{box-shadow:0 0 0 6px rgba(201,138,75,0)}}
+  .top{animation:up .7s both}
+  .top i{animation:pulse 2.2s infinite}
+  .hero>*{animation:up .9s cubic-bezier(.2,.7,.2,1) both}
+  .hero>*:nth-child(1){animation-delay:.1s}.hero>*:nth-child(2){animation-delay:.2s}
+  .hero>*:nth-child(3){animation-delay:.35s}.hero>*:nth-child(4){animation-delay:.5s}
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  #bar{position:fixed;top:0;left:0;height:2px;width:0;background:var(--ac);z-index:9}
+  .frow{transition:opacity .25s,border-color .25s}
+  .frow:hover{border-bottom-color:var(--ac)}
+  .frow.off{opacity:.35}
+  .frow.off input[type=text]{pointer-events:none}
+  button:active{transform:scale(.97)}
+  button.busy{position:relative;overflow:hidden;pointer-events:none}
+  button.busy:before{content:"";position:absolute;left:0;bottom:0;height:2px;background:var(--ac);animation:load .45s linear forwards}
+  button.busy:after{content:" \2026"}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:26px}
+  .stats small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--mut)}
+  .stats b{font-size:clamp(26px,5vw,46px);font-weight:700;letter-spacing:-.04em;line-height:1.2}
+  .stats div:last-child b{color:var(--ac)}
+  .sql{margin:0 0 26px;padding-left:16px;border-left:1px solid var(--ac);font:12px/1.7 Consolas,"Courier New",monospace;color:var(--mut);white-space:pre-wrap;overflow-x:auto}
+  .sql.flash{animation:flash .9s}
+  #preview tr.r{animation:rowin .45s both}
+  #toast{position:fixed;right:24px;bottom:24px;max-width:340px;padding:14px 18px;background:#1b1815;border-left:2px solid var(--ac);font-size:13px;opacity:0;transform:translateY(16px);transition:.35s;pointer-events:none;z-index:10}
+  #toast.show{opacity:1;transform:none}
+  #toast.err{border-left-color:#d9534f}
+  /* --- unblock fix section --- */
+  @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+  .top{position:sticky;top:0;z-index:5;background:rgba(20,18,16,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .tr{display:flex;gap:28px;align-items:center}
+  .fixlink{color:var(--ac);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s}
+  .fixlink:hover{border-bottom-color:var(--ac)}
+  #fix{scroll-margin-top:80px}
+  @keyframes hl{0%{box-shadow:inset 3px 0 0 var(--ac);background:rgba(201,138,75,.09)}100%{box-shadow:inset 3px 0 0 transparent;background:transparent}}
+  #fix.hl{animation:hl 1.8s ease-out}
+  .fixtabs{display:flex;gap:26px;flex-wrap:wrap;border-bottom:1px solid var(--bd);margin:18px 0 8px}
+  .fixtabs button{border:0;padding:0 0 12px;color:var(--mut);position:relative;background:none}
+  .fixtabs button:after{content:"";position:absolute;left:0;bottom:-1px;height:1px;width:0;background:var(--ac);transition:width .3s}
+  .fixtabs button.on{color:var(--tx)}
+  .fixtabs button.on:after{width:100%}
+  .fixtabs button:hover{background:none;color:var(--tx)}
+  .fixpanel{display:none}
+  .fixpanel.on{display:block;animation:up .5s both}
+  .steps{list-style:none;padding:0;margin:0;counter-reset:st}
+  .steps li{counter-increment:st;display:flex;gap:18px;padding:14px 0;border-bottom:1px solid var(--bd)}
+  .steps li:before{content:"0" counter(st);color:var(--ac);font-size:12px;letter-spacing:.14em;flex:none;padding-top:3px}
+  .cmd{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .cmd code{font:12px Consolas,"Courier New",monospace;color:var(--ac);padding:8px 12px;border:1px solid var(--bd);background:#1b1815;overflow-x:auto;max-width:100%}
+  #copyCmd{padding:8px 0}
+  #copyCmd:after{content:""}
+  #toast.show{pointer-events:auto}
+  #toast .fixlink{display:block;margin-top:6px;font-weight:600}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="bar"></div><div id="toast"></div>
+<div class="wrap">
+  <div class="top"><b>Access DB Generator</b><span class="tr"><a class="fixlink" href="#fix">Blocked? Fix it &darr;</a><span><i></i>Runs locally</span></span></div>
+  <div class="hero">
+    <div class="eyebrow">Data tool</div>
+    <h1>Access DB Generator<span>&mdash; by jerome david.</span></h1>
+    <p class="sub">Configure the table, name the fields your way, and get a populated Access database in seconds.</p>
+    <div class="meta"><em>01</em>Tables &middot; Fields &middot; Sample data</div>
+  </div>
+
+  <div class="card">
+    <h2>Database</h2>
+    <div class="grid">
+      <div><label>File name</label><input type="text" id="fname" value="SampleDB"></div>
+      <div><label>Table name</label><input type="text" id="tname" value="People"></div>
+      <div><label>Access format</label>
+        <select id="fmt">
+          <option value="mdb">.mdb: Access 2000-2003 (best for old PCs; opens in newer too)</option>
+          <option value="accdb">.accdb: Access 2007 and newer</option>
+        </select></div>
+      <div><label>Number of rows (max 50,000)</label><input type="number" id="rows" value="100" min="1" max="50000"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Fields &amp; column names</h2>
+    <div class="grid" style="margin-bottom:12px">
+      <div><label>Naming style (fills in the names below)</label>
+        <select id="nstyle">
+          <option value="pascal">FirstName (no spaces)</option>
+          <option value="snake">first_name (lowercase, underscores)</option>
+          <option value="spaced">First Name (with spaces)</option>
+          <option value="upper">FIRST_NAME (uppercase)</option>
+        </select></div>
+    </div>
+    <p class="note" style="margin-top:0">Tick the fields you want, and edit any name to whatever you like.</p>
+    <div class="fgrid" id="fields"></div>
+  </div>
+
+  <div class="card">
+    <h2>Data options</h2>
+    <div class="grid">
+      <div><label>Age min</label><input type="number" id="amin" value="18" min="0" max="120"></div>
+      <div><label>Age max</label><input type="number" id="amax" value="65" min="0" max="120"></div>
+      <div><label>Middle name: % of rows filled</label><input type="number" id="mpct" value="100" min="0" max="100"></div>
+    </div>
+    <div class="grid" style="margin-top:12px">
+      <div><label>Genders (comma separated)</label><input type="text" id="genders" value="Male, Female"></div>
+      <div><label>Locations (comma separated)</label><textarea id="locs">Manila, Quezon City, Cebu City, Davao City, San Fernando, Angeles, Baguio, Iloilo City</textarea></div>
+      <div><label>Roles (comma separated)</label><textarea id="roles">Admin, Manager, Staff, Supervisor, Clerk, Developer, Analyst</textarea></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button id="btnGen">Generate &amp; download Access builder</button>
+      <button class="alt" id="btnCsv">Download CSV only</button>
+      <button class="alt" id="btnPrev">Shuffle preview</button>
+    </div>
+    <p class="note" style="margin-bottom:0">Save the downloaded <b>.vbs</b> file to any folder and double-click it. The database (<b>.mdb</b> or <b>.accdb</b>, per your choice) is created in the same folder; an existing file with the same name is replaced. Works on Windows XP and newer. <b>.mdb</b> uses the Jet engine built into older Windows, so it usually needs no extra install. Windows says it can&rsquo;t open the file? <a class="fixlink" href="#fix">See the quick fix</a>.</p>
+  </div>
+
+  <div class="card" id="fix">
+    <h2>Windows blocked the file? Quick fix</h2>
+    <p class="note" style="margin-top:0">Seeing <b>&ldquo;These files can&rsquo;t be opened &mdash; Your Internet security settings prevented one or more files from being opened&rdquo;</b>? That&rsquo;s Windows being cautious about downloaded files. Nothing is wrong with the file. Pick a fix:</p>
+    <div class="fixtabs">
+      <button class="on" data-t="fx1">Unblock (easiest)</button>
+      <button data-t="fx2">PowerShell</button>
+      <button data-t="fx3">Still blocked?</button>
+      <button data-t="fx4">Other errors</button>
+    </div>
+    <div class="fixpanel on" id="fx1"><ol class="steps">
+      <li><div>Open <b>File Explorer</b> and go to your <b>Downloads</b> folder.</div></li>
+      <li><div>Right-click <b class="fn">SampleDB_builder.vbs</b> and choose <b>Properties</b>.</div></li>
+      <li><div>At the bottom of the General tab, tick <b>Unblock</b>, then click <b>Apply</b> and <b>OK</b>.</div></li>
+      <li><div>Double-click the file again. Your database appears in the same folder.</div></li>
+    </ol></div>
+    <div class="fixpanel" id="fx2"><ol class="steps">
+      <li><div>Open the Start menu, type <b>PowerShell</b>, and press Enter.</div></li>
+      <li><div>Paste this command and press Enter:<div class="cmd"><code id="cmdText"></code><button class="alt" id="copyCmd">Copy</button></div></div></li>
+      <li><div>Double-click <b class="fn">SampleDB_builder.vbs</b> again.</div></li>
+    </ol></div>
+    <div class="fixpanel" id="fx3"><ol class="steps">
+      <li><div>Use <b>Download CSV only</b> above. In Access go to <b>External Data &rarr; New Data Source &rarr; From File &rarr; Text File</b> and follow the wizard (tick &ldquo;First Row Contains Field Names&rdquo;).</div></li>
+      <li><div>No Unblock checkbox? Move the .vbs to your Desktop or a USB drive and try the steps again there.</div></li>
+      <li><div>On a school PC, scripts may be turned off by the administrator. Ask your teacher or IT to allow it.</div></li>
+    </ol></div>
+    <div class="fixpanel" id="fx4"><ol class="steps">
+      <li><div><b>&ldquo;Could not create the database&rdquo;</b>: choose the <b>.mdb</b> format under Database, generate again, and retry. If it still fails, that PC needs the free Microsoft Access Database Engine installed.</div></li>
+      <li><div><b>Nothing happens on double-click</b>: make sure the name ends in <b>.vbs</b>, not .vbs.txt. In File Explorer, turn on <b>View &rarr; File name extensions</b>.</div></li>
+      <li><div><b>Database not updating</b>: close the old file if it&rsquo;s open in Access, then run the script again.</div></li>
+    </ol></div>
+  </div>
+
+  <div class="card">
+    <h2>Preview &mdash; first 8 rows</h2>
+    <div class="stats"><div><small>Rows</small><b id="sRows">0</b></div><div><small>Columns</small><b id="sCols">0</b></div><div><small>Est. size</small><b id="sSize">0 KB</b></div></div>
+    <pre class="sql" id="sql"></pre>
+    <div class="tbl" id="preview"></div>
+  </div>
+  <div class="foot"><span>Systems / Automation / Operations</span><span>Built with intention.</span></div>
+</div>
+
+<script>
+const FIELDS = [
+  {key:'id',label:'Primary key (ID)',col:'ID',type:'COUNTER PRIMARY KEY',on:true},
+  {key:'first',label:'First name',col:'FirstName',type:'TEXT(50)',on:true},
+  {key:'middle',label:'Middle name',col:'MiddleName',type:'TEXT(50)',on:true},
+  {key:'last',label:'Last name',col:'LastName',type:'TEXT(50)',on:true},
+  {key:'age',label:'Age',col:'Age',type:'SHORT',on:true},
+  {key:'gender',label:'Gender',col:'Gender',type:'TEXT(20)',on:true},
+  {key:'loc',label:'Location',col:'Location',type:'TEXT(100)',on:true},
+  {key:'role',label:'Role',col:'Role',type:'TEXT(50)',on:true},
+];
+const FIRST_M=['James','John','Mark','Paul','Daniel','Michael','Joseph','Carlo','Miguel','Rafael','Angelo','Jose','Luis','Gabriel','Nathan'];
+const FIRST_F=['Maria','Anna','Grace','Sofia','Isabel','Angela','Patricia','Kristine','Jasmine','Clarisse','Nicole','Rose','Camille','Lea','Bianca'];
+const LAST=['Santos','Reyes','Cruz','Bautista','Garcia','Mendoza','Torres','Flores','Ramos','Aquino','Castillo','Villanueva','Navarro','Dela Cruz','Domingo','Pascual','Salazar','Rivera','Lopez','Gonzales'];
+
+const $ = id => document.getElementById(id);
+const box = $('fields');
+function styled(key,style){
+  const f=FIELDS.find(x=>x.key===key);
+  const w=f.col.replace(/([a-z])([A-Z])/g,'$1 $2').split(' ');
+  return style==='snake'?w.join('_').toLowerCase()
+       : style==='spaced'?w.join(' ')
+       : style==='upper'?w.join('_').toUpperCase()
+       : w.join('');
+}
+FIELDS.forEach(f=>{
+  const l=document.createElement('label');
+  l.className='frow';
+  l.innerHTML=`<input type="checkbox" data-k="${f.key}" ${f.on?'checked':''}><span>${f.label}</span><input type="text" data-n="${f.key}" value="${f.col}">`;
+  box.appendChild(l);
+});
+$('nstyle').onchange=()=>{
+  box.querySelectorAll('input[data-n]').forEach(i=>{ i.value=styled(i.dataset.n,$('nstyle').value); });
+  preview();
+};
+
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const list = s => s.split(',').map(x=>x.trim()).filter(Boolean);
+const int = (a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const clean = s => String(s).replace(/[^\x20-\x7E]/g,'');
+const safeName = s => (clean(s).replace(/[\\/:*?"<>|]/g,'').trim()||'Database');
+const safeIdent = s => (clean(s).replace(/[^A-Za-z0-9_ ]/g,'').trim()||'People');
+
+function colName(k){
+  const el=box.querySelector(`input[data-n="${k}"]`);
+  const clean2=clean(el.value).replace(/[\[\]\.!`"']/g,'').trim();
+  return clean2 || FIELDS.find(f=>f.key===k).col;
+}
+function active(){
+  const on = [...box.querySelectorAll('input[data-k]:checked')].map(i=>i.dataset.k);
+  return FIELDS.filter(f=>on.includes(f.key)).map(f=>({...f,col:colName(f.key)}));
+}
+
+function makeRows(n){
+  const genders=list($('genders').value)||['Male'], locs=list($('locs').value), roles=list($('roles').value);
+  const a=+$('amin').value, b=Math.max(a,+$('amax').value), mp=+$('mpct').value;
+  const rows=[];
+  for(let i=1;i<=n;i++){
+    const g = genders.length?pick(genders):'';
+    const female = /^f/i.test(g);
+    const pool = /^m/i.test(g)?FIRST_M : female?FIRST_F : FIRST_M.concat(FIRST_F);
+    rows.push({
+      id:i, first:pick(pool),
+      middle: Math.random()*100<mp ? pick(LAST) : '',
+      last:pick(LAST), age:int(a,b), gender:g,
+      loc:locs.length?pick(locs):'', role:roles.length?pick(roles):''
+    });
+  }
+  return rows;
+}
+
+function getN(){return Math.min(50000,Math.max(1,parseInt($('rows').value)||1));}
+
+function preview(){
+  const fs=active().filter(f=>f.key!=='id' || true);
+  const rows=makeRows(8);
+  if(!fs.length){$('preview').innerHTML='<p class="note">Select at least one field.</p>';afterPreview([]);return;}
+  $('preview').innerHTML='<table><tr>'+fs.map(f=>`<th>${f.col}</th>`).join('')+'</tr>'+
+    rows.map(r=>'<tr>'+fs.map(f=>`<td>${clean(r[f.key])}</td>`).join('')+'</tr>').join('')+'</table>';
+  afterPreview(fs);
+}
+
+function download(name,text,mime){
+  const blob=new Blob([text],{type:mime});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+
+function needFields(){
+  const fs=active();
+  if(!fs.length){alert('Select at least one field.');return null;}
+  const seen=new Set();
+  for(const f of fs){
+    const k=f.col.toLowerCase();
+    if(seen.has(k)){alert('Two fields are named "'+f.col+'". Column names must be unique.');return null;}
+    seen.add(k);
+  }
+  return fs;
+}
+
+const q = s => "'" + clean(s).replace(/'/g,"''") + "'";
+const vq = s => s.replace(/"/g,'""');
+
+$('btnGen').onclick=()=>{
+  const fs=needFields(); if(!fs) return;
+  const file=safeName($('fname').value), table=safeIdent($('tname').value), rows=makeRows(getN());
+  const fmt=$('fmt').value;
+  const insertFs=fs.filter(f=>f.key!=='id');
+  const create=`CREATE TABLE [${table}] (`+fs.map(f=>`[${f.col}] ${f.type}`).join(', ')+`)`;
+
+  const L=[];
+  L.push("' Generated by Access DB Generator");
+  L.push('Option Explicit');
+  L.push('Dim fso, folder, dbPath, cat, conn, prov, provs, ok, i');
+  L.push('Set fso = CreateObject("Scripting.FileSystemObject")');
+  L.push('folder = fso.GetParentFolderName(WScript.ScriptFullName)');
+  L.push(`dbPath = folder & "\\${vq(file)}.${fmt}"`);
+  L.push('If fso.FileExists(dbPath) Then fso.DeleteFile dbPath, True');
+  L.push(fmt==='mdb'
+    ? 'provs = Array("Microsoft.Jet.OLEDB.4.0", "Microsoft.ACE.OLEDB.12.0", "Microsoft.ACE.OLEDB.16.0")'
+    : 'provs = Array("Microsoft.ACE.OLEDB.16.0", "Microsoft.ACE.OLEDB.12.0")');
+  L.push('ok = ""');
+  L.push('On Error Resume Next');
+  L.push('For Each prov In provs');
+  L.push('  Err.Clear');
+  L.push('  Set cat = CreateObject("ADOX.Catalog")');
+  L.push('  cat.Create "Provider=" & prov & ";Data Source=" & dbPath' + (fmt==='mdb' ? ' & ";Jet OLEDB:Engine Type=5"' : ''));
+  L.push('  If Err.Number = 0 Then ok = prov : Exit For');
+  L.push('Next');
+  L.push('On Error GoTo 0');
+  L.push('If ok = "" Then');
+  L.push('  Dim wow : wow = fso.GetSpecialFolder(0) & "\\SysWOW64\\wscript.exe"');
+  L.push('  If WScript.Arguments.Count = 0 And fso.FileExists(wow) Then');
+  L.push('    CreateObject("WScript.Shell").Run """" & wow & """ """ & WScript.ScriptFullName & """ x86", 1, True');
+  L.push('    WScript.Quit 0');
+  L.push('  End If');
+  L.push('  MsgBox "Could not create the database." & vbCrLf & "Install Microsoft Access or the Access Database Engine (ACE OLEDB).", 16, "Access DB Generator"');
+  L.push('  WScript.Quit 1');
+  L.push('End If');
+  L.push('Set conn = CreateObject("ADODB.Connection")');
+  L.push('conn.Open "Provider=" & ok & ";Data Source=" & dbPath');
+  L.push(`conn.Execute "${vq(create)}"`);
+  L.push('conn.BeginTrans');
+  const colList='['+insertFs.map(f=>f.col).join('], [')+']';
+  rows.forEach(r=>{
+    if(!insertFs.length){ L.push(`conn.Execute "INSERT INTO [${table}] ([ID]) VALUES (${r.id})"`); return; }
+    const vals=insertFs.map(f=> f.key==='age' ? (+r.age) : q(r[f.key]));
+    L.push(`conn.Execute "${vq(`INSERT INTO [${table}] (${colList}) VALUES (${vals.join(', ')})`)}"`);
+  });
+  L.push('conn.CommitTrans');
+  L.push('conn.Close');
+  L.push(`MsgBox "Created " & dbPath & vbCrLf & "Table: ${vq(table)} (${rows.length} rows)", 64, "Access DB Generator"`);
+  download(file+'_builder.vbs', L.join('\r\n')+'\r\n','text/vbscript');
+};
+
+$('btnCsv').onclick=()=>{
+  const fs=needFields(); if(!fs) return;
+  const rows=makeRows(getN());
+  const esc=v=>{v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const out=[fs.map(f=>f.col).join(',')].concat(rows.map(r=>fs.map(f=>esc(r[f.key])).join(',')));
+  download(safeName($('fname').value)+'.csv','\ufeff'+out.join('\r\n'),'text/csv');
+};
+
+$('btnPrev').onclick=preview;
+document.querySelectorAll('input,textarea').forEach(e=>e.addEventListener('change',preview));
+/* ===== interactivity & animation ===== */
+const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+// scroll reveal
+const revs=[...document.querySelectorAll('.card,.foot')];
+revs.forEach(e=>e.classList.add('reveal'));
+if('IntersectionObserver' in window){
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.08});
+  revs.forEach(e=>io.observe(e));
+}else revs.forEach(e=>e.classList.add('in'));
+
+// scroll progress bar
+addEventListener('scroll',()=>{
+  const h=document.documentElement.scrollHeight-innerHeight;
+  $('bar').style.width=(h>0?scrollY/h*100:0)+'%';
+},{passive:true});
+
+// cursor-following glow (eased, stops when settled)
+let mx=62,my=18,gx=62,gy=18,raf=0;
+function glow(){
+  mx+=(gx-mx)*.08; my+=(gy-my)*.08;
+  document.body.style.setProperty('--mx',mx.toFixed(1)+'%');
+  document.body.style.setProperty('--my',my.toFixed(1)+'%');
+  raf=(Math.abs(gx-mx)>.05||Math.abs(gy-my)>.05)?requestAnimationFrame(glow):0;
+}
+if(!reduce) addEventListener('mousemove',e=>{gx=e.clientX/innerWidth*100;gy=e.clientY/innerHeight*100;if(!raf)raf=requestAnimationFrame(glow);});
+
+// toast (also replaces blocking alert())
+const tEl=$('toast'); let tt, hadErr=false;
+function toast(msg,err,link){
+  tEl.textContent=msg; tEl.className='show'+(err?' err':'');
+  if(link){const a=document.createElement('a');a.href='#fix';a.className='fixlink';a.textContent='Blocked by Windows? See the fix \u2192';a.onclick=()=>{setTimeout(hlFix,350);};tEl.appendChild(a);}
+  clearTimeout(tt); tt=setTimeout(()=>{tEl.className='';},link?8000:3800);
+}
+window.alert=m=>{hadErr=true;toast(m,true);};
+
+// count-up numbers
+function countTo(el,to,fmt){
+  const from=+el.dataset.v||0; el.dataset.v=to;
+  if(reduce){el.textContent=fmt?fmt(to):to;return;}
+  const t0=performance.now(),d=550;
+  (function step(t){
+    const p=Math.min(1,(t-t0)/d),e=1-Math.pow(1-p,3),v=Math.round(from+(to-from)*e);
+    el.textContent=fmt?fmt(v):v;
+    if(p<1)requestAnimationFrame(step);
+  })(t0);
+}
+const fmtSize=v=>v>=1024?(v/1024).toFixed(1)+' MB':v+' KB';
+
+// runs after every preview refresh
+function afterPreview(fs){
+  document.querySelectorAll('#preview tr').forEach((tr,i)=>{if(i){tr.className='r';tr.style.animationDelay=(i*50)+'ms';}});
+  box.querySelectorAll('.frow').forEach(l=>l.classList.toggle('off',!l.querySelector('[data-k]').checked));
+  const n=getN();
+  const sample=makeRows(8);
+  const avg=fs.length?sample.reduce((a,r)=>a+fs.reduce((b,f)=>b+(f.key==='id'||f.key==='age'?4:String(r[f.key]).length+1),0),0)/8+8:0;
+  countTo($('sRows'),n);
+  countTo($('sCols'),fs.length);
+  countTo($('sSize'),Math.round(120+n*avg/1024),fmtSize);
+  const t=safeIdent($('tname').value);
+  const sql=fs.length?'CREATE TABLE ['+t+'] (\n'+fs.map(f=>'  ['+f.col+'] '+f.type).join(',\n')+'\n);':'-- select at least one field';
+  const el=$('sql'); el.textContent=sql; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+}
+
+// busy state + toast on downloads
+function run(btn,label,fn,okMsg){
+  if(btn.classList.contains('busy'))return;
+  const orig=btn.textContent; hadErr=false;
+  btn.classList.add('busy'); btn.textContent=label;
+  setTimeout(()=>{
+    try{fn();}catch(e){hadErr=true;toast('Something went wrong: '+e.message,true);}
+    btn.classList.remove('busy'); btn.textContent=orig;
+    if(!hadErr)toast(okMsg,false,btn.id==='btnGen');
+  },reduce?0:450);
+}
+const ogGen=$('btnGen').onclick, ogCsv=$('btnCsv').onclick;
+$('btnGen').onclick=()=>run($('btnGen'),'Generating',ogGen,'Builder downloaded. Save it in a folder and double-click it.');
+$('btnCsv').onclick=()=>run($('btnCsv'),'Preparing',ogCsv,'CSV downloaded.');
+
+// live preview while typing (debounced) + Ctrl+Enter to generate
+let deb;
+document.querySelectorAll('input[type=text],input[type=number],textarea').forEach(e=>e.addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(preview,350);}));
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();$('btnGen').click();}});
+
+// unblock-fix section: tabs, live file name, copy button, highlight
+function hlFix(){const f=$('fix');f.classList.remove('hl');void f.offsetWidth;f.classList.add('hl');}
+document.querySelectorAll('a[href="#fix"]').forEach(a=>a.addEventListener('click',()=>setTimeout(hlFix,350)));
+document.querySelectorAll('.fixtabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.fixtabs button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.fixpanel').forEach(p=>p.classList.toggle('on',p.id===b.dataset.t));
+});
+function updateFix(){
+  const f=safeName($('fname').value)+'_builder.vbs';
+  document.querySelectorAll('.fn').forEach(e=>{e.textContent=f;});
+  $('cmdText').textContent='Unblock-File "$env:USERPROFILE\\Downloads\\'+f+'"';
+}
+$('fname').addEventListener('input',updateFix); updateFix();
+$('copyCmd').onclick=()=>{
+  const t=$('cmdText').textContent;
+  const fallback=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');toast('Command copied.');}catch(e){toast('Select the command and press Ctrl+C.',true);}ta.remove();};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>toast('Command copied.'),fallback);else fallback();
+};
+
+preview();
+</script>
+</body>
+</html>

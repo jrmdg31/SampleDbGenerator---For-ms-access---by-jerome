@@ -1,0 +1,15 @@
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+
+# Generated files from testing the tool
+*.accdb
+*.mdb
+*_builder.vbs
+*.laccdb
+*.ldb

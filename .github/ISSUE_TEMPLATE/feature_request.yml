@@ -1,0 +1,23 @@
+name: 💡 Idea / feature request
+description: Got an idea to make this better? I'd love to hear it.
+title: "[Idea]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What's your idea?
+      description: New field types, better sample data, design tweaks, anything.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why would it help?
+      description: What problem does it solve for you or for others?
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Want to build it?
+      options:
+        - label: I'd like to open a pull request for this
