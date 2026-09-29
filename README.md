@@ -10,8 +10,6 @@ I made this because setting up dummy Access databases by hand is slow, boring, a
 ---
 
 ## 🎬 See it in action
-
-  OPTION 2 (YouTube): replace VIDEO_ID with your video's ID, and use a screenshot as the thumbnail:
   [![Watch the demo](https://img.youtube.com/vi/OczU0eB0NvQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=OczU0eB0NvQ)
   -->
 *Short on time? The video shows the whole flow in under a minute: pick fields, generate, double-click, done.*
