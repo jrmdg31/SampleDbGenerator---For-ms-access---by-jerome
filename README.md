@@ -6,7 +6,7 @@ A tiny tool that builds a ready-to-use Microsoft Access database, already filled
 
 I made this because setting up dummy Access databases by hand is slow, boring, and honestly a waste of good coffee. So I turned it into a system.
 
-👉 **Live tool:** `https://YOUR-USERNAME.github.io/access-db-generator/](https://jrmdg31.github.io/SampleDbGenerator---For-ms-access---by-jerome/`
+👉 **Live tool:** `https://jrmdg31.github.io/SampleDbGenerator---For-ms-access---by-jerome/`
 ---
 
 ## 🎬 See it in action
