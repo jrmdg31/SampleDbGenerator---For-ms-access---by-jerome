@@ -84,6 +84,7 @@
   #toast{position:fixed;right:24px;bottom:24px;max-width:340px;padding:14px 18px;background:#1b1815;border-left:2px solid var(--ac);font-size:13px;opacity:0;transform:translateY(16px);transition:.35s;pointer-events:none;z-index:10}
   #toast.show{opacity:1;transform:none}
   #toast.err{border-left-color:#d9534f}
+
   /* --- unblock fix section --- */
   @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
   .top{position:sticky;top:0;z-index:5;background:rgba(20,18,16,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
@@ -108,40 +109,172 @@
   .cmd code{font:12px Consolas,"Courier New",monospace;color:var(--ac);padding:8px 12px;border:1px solid var(--bd);background:#1b1815;overflow-x:auto;max-width:100%}
   #copyCmd{padding:8px 0}
   #copyCmd:after{content:""}
+
   #toast.show{pointer-events:auto}
   #toast .fixlink{display:block;margin-top:6px;font-weight:600}
+
   .ctabs{display:flex;gap:26px;flex-wrap:wrap;border-bottom:1px solid var(--bd);margin:18px 0 8px}
   .ctabs button{border:0;padding:0 0 12px;color:var(--mut);position:relative;background:none}
   .ctabs button:after{content:"";position:absolute;left:0;bottom:-1px;height:1px;width:0;background:var(--ac);transition:width .3s}
   .ctabs button.on{color:var(--tx)}
   .ctabs button.on:after{width:100%}
   .ctabs button:hover{background:none;color:var(--tx)}
+
   .chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
   .chip{cursor:pointer;user-select:none;border:1px solid var(--bd);border-radius:999px;padding:6px 14px;font-size:13px;color:var(--mut);transition:.2s;outline:none}
   .chip:hover,.chip:focus{border-color:var(--ac);color:var(--tx)}
   .chip.on{border-color:var(--ac);color:var(--ac)}
   .chip.on:before{content:"\2713  "}
+
   #flist{display:flex;flex-direction:column;gap:8px;position:relative;margin-top:14px}
-  .frow2{display:grid;grid-template-columns:auto 26px 1.4fr 1fr 1.2fr auto;gap:14px;align-items:center;padding:10px 14px;border:1px solid var(--bd);background:#181512;border-radius:8px;transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s,border-color .25s,background .25s,opacity .25s}
+
+  .frow2{
+    display:grid;
+    grid-template-columns:auto 26px 1.4fr 1fr 1.2fr minmax(165px,1.1fr) auto;
+    gap:14px;
+    align-items:center;
+    padding:10px 14px;
+    border:1px solid var(--bd);
+    background:#181512;
+    border-radius:8px;
+    transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s,border-color .25s,background .25s,opacity .25s
+  }
+
   .frow2.new{animation:up .4s both}
   .frow2.out{opacity:0;transform:translateX(26px)}
-  .frow2.drag{position:relative;z-index:3;transition:box-shadow .25s,border-color .25s;border-color:var(--ac);background:#211b15;box-shadow:0 16px 36px rgba(0,0,0,.6);cursor:grabbing}
-  .grip{width:18px;height:27px;cursor:grab;touch-action:none;border-radius:4px;outline:none;opacity:.7;transition:.2s;background:radial-gradient(circle,#8f877c 1.5px,transparent 1.9px) 0 0/9px 9px}
-  .grip:hover,.grip:focus,.drag .grip{opacity:1;background-image:radial-gradient(circle,#c98a4b 1.5px,transparent 1.9px)}
+  .frow2.drag{
+    position:relative;
+    z-index:3;
+    transition:box-shadow .25s,border-color .25s;
+    border-color:var(--ac);
+    background:#211b15;
+    box-shadow:0 16px 36px rgba(0,0,0,.6);
+    cursor:grabbing
+  }
+
+  .grip{
+    width:18px;
+    height:27px;
+    cursor:grab;
+    touch-action:none;
+    border-radius:4px;
+    outline:none;
+    opacity:.7;
+    transition:.2s;
+    background:radial-gradient(circle,#8f877c 1.5px,transparent 1.9px) 0 0/9px 9px
+  }
+
+  .grip:hover,.grip:focus,.drag .grip{
+    opacity:1;
+    background-image:radial-gradient(circle,#c98a4b 1.5px,transparent 1.9px)
+  }
+
   .fno{font-size:11px;letter-spacing:.12em;color:var(--ac)}
   .frow2 input,.frow2 select{padding:6px 0;font-size:14px}
   .frow2 select:disabled{opacity:.4}
-  .frow2 .x{cursor:pointer;color:var(--mut);font-size:20px;line-height:1;padding:2px 6px;transition:.2s}
+
+  .frow2 .x{
+    cursor:pointer;
+    color:var(--mut);
+    font-size:20px;
+    line-height:1;
+    padding:2px 6px;
+    transition:.2s
+  }
+
   .frow2 .x:hover{color:#d9534f}
+
   #addBtn:after{content:" +"}
-  @media (max-width:720px){.frow2{grid-template-columns:auto 1fr auto}.frow2 .fno{display:none}.frow2 .ty,.frow2 .gn{grid-column:1/-1}}
-  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+
+  /* --- numeric range editor --- */
+  .rng{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    min-width:0
+  }
+
+  .rngLabel{
+    font-size:9px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--mut);
+    flex:none
+  }
+
+  .rng input[type=number]{
+    width:62px;
+    min-width:0;
+    padding:5px 4px;
+    border-bottom-color:#3a342e;
+    font-size:12px;
+    text-align:center
+  }
+
+  .rng input[type=number]:focus{
+    border-bottom-color:var(--ac)
+  }
+
+  .rngTo{
+    color:var(--mut);
+    font-size:11px;
+    flex:none
+  }
+
+  .rng[hidden]{display:none}
+
+  @media (max-width:900px){
+    .frow2{
+      grid-template-columns:auto 26px 1.3fr 1fr 1.1fr;
+    }
+    .frow2 .rng{
+      grid-column:4/-1;
+    }
+    .frow2 .x{
+      grid-column:5
+    }
+  }
+
+  @media (max-width:720px){
+    .frow2{
+      grid-template-columns:auto 1fr auto;
+    }
+    .frow2 .fno{display:none}
+    .frow2 .ty,
+    .frow2 .gn,
+    .frow2 .rng{
+      grid-column:1/-1
+    }
+    .frow2 .x{
+      grid-column:auto;
+      grid-row:1
+    }
+    .rng input[type=number]{
+      width:82px
+    }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+  }
 </style>
 </head>
+
 <body>
-<div id="bar"></div><div id="toast"></div>
+<div id="bar"></div>
+<div id="toast"></div>
+
 <div class="wrap">
-  <div class="top"><b>Access DB Generator</b><span class="tr"><a class="fixlink" href="#fix">Blocked? Fix it &darr;</a><span><i></i>Runs locally</span></span></div>
+
+  <div class="top">
+    <b>Access DB Generator</b>
+    <span class="tr">
+      <a class="fixlink" href="#fix">Blocked? Fix it &darr;</a>
+      <span><i></i>Runs locally</span>
+    </span>
+  </div>
+
   <div class="hero">
     <div class="eyebrow">Data tool</div>
     <h1>Access DB Generator<span>&mdash; by jerome david.</span></h1>
@@ -152,42 +285,85 @@
   <div class="card">
     <h2>Database</h2>
     <div class="grid">
-      <div><label>File name</label><input type="text" id="fname" value="SampleDB"></div>
-      <div><label>Table name</label><input type="text" id="tname" value="People"></div>
-      <div><label>Access format</label>
+      <div>
+        <label>File name</label>
+        <input type="text" id="fname" value="SampleDB">
+      </div>
+
+      <div>
+        <label>Table name</label>
+        <input type="text" id="tname" value="People">
+      </div>
+
+      <div>
+        <label>Access format</label>
         <select id="fmt">
           <option value="mdb">.mdb: Access 2000-2003 (best for old PCs; opens in newer too)</option>
           <option value="accdb">.accdb: Access 2007 and newer</option>
-        </select></div>
-      <div><label>Number of rows (max 50,000)</label><input type="number" id="rows" value="100" min="1" max="50000"></div>
+        </select>
+      </div>
+
+      <div>
+        <label>Number of rows (max 50,000)</label>
+        <input type="number" id="rows" value="100" min="1" max="50000">
+      </div>
     </div>
   </div>
 
   <div class="card">
     <h2>Fields &amp; data types</h2>
+
     <div class="grid" style="margin-bottom:8px">
-      <div><label>Naming style (applies to all names)</label>
+      <div>
+        <label>Naming style (applies to all names)</label>
         <select id="nstyle">
           <option value="pascal">FirstName (no spaces)</option>
           <option value="snake">first_name (lowercase, underscores)</option>
           <option value="spaced">First Name (with spaces)</option>
           <option value="upper">FIRST_NAME (uppercase)</option>
-        </select></div>
+        </select>
+      </div>
     </div>
+
     <div class="ctabs" id="ctabs"></div>
+
     <div class="chips" id="chips"></div>
-    <p class="note" style="margin-top:0">Tap a preset to add or remove it. Drag the dotted handle to reorder, or focus it and use the arrow keys.</p>
+
+    <p class="note" style="margin-top:0">
+      Tap a preset to add or remove it. Drag the dotted handle to reorder, or focus it and use the arrow keys.
+      For Number, Decimal, and Currency fields, use the Range controls to define the minimum and maximum generated value.
+    </p>
+
     <div id="flist"></div>
-    <div class="row" style="margin-top:16px"><button class="alt" id="addBtn">Add custom field</button></div>
+
+    <div class="row" style="margin-top:16px">
+      <button class="alt" id="addBtn">Add custom field</button>
+    </div>
   </div>
 
   <div class="card">
     <h2>Data options</h2>
+
     <div class="grid">
-      <div><label>Empty cells (%)</label><input type="number" id="blank" value="0" min="0" max="90"></div>
-      <div><label>Genders (comma separated)</label><input type="text" id="genders" value="Male, Female"></div>
-      <div><label>Job titles</label><textarea id="roles">Admin, Manager, Staff, Supervisor, Clerk, Developer, Analyst</textarea></div>
-      <div><label>Locations / cities</label><textarea id="locs">Manila, Quezon City, Cebu City, Davao City, San Fernando, Angeles, Baguio, Iloilo City</textarea></div>
+      <div>
+        <label>Empty cells (%)</label>
+        <input type="number" id="blank" value="0" min="0" max="90">
+      </div>
+
+      <div>
+        <label>Genders (comma separated)</label>
+        <input type="text" id="genders" value="Male, Female">
+      </div>
+
+      <div>
+        <label>Job titles</label>
+        <textarea id="roles">Admin, Manager, Staff, Supervisor, Clerk, Developer, Analyst</textarea>
+      </div>
+
+      <div>
+        <label>Locations / cities</label>
+        <textarea id="locs">Manila, Quezon City, Cebu City, Davao City, San Fernando, Angeles, Baguio, Iloilo City</textarea>
+      </div>
     </div>
   </div>
 
@@ -197,53 +373,122 @@
       <button class="alt" id="btnCsv">Download CSV only</button>
       <button class="alt" id="btnPrev">Shuffle preview</button>
     </div>
-    <p class="note" style="margin-bottom:0">Save the downloaded <b>.vbs</b> file to any folder and double-click it. The database (<b>.mdb</b> or <b>.accdb</b>, per your choice) is created in the same folder; an existing file with the same name is replaced. Works on Windows XP and newer. <b>.mdb</b> uses the Jet engine built into older Windows, so it usually needs no extra install. Windows says it can&rsquo;t open the file? <a class="fixlink" href="#fix">See the quick fix</a>.</p>
+
+    <p class="note" style="margin-bottom:0">
+      Save the downloaded <b>.vbs</b> file to any folder and double-click it.
+      The database (<b>.mdb</b> or <b>.accdb</b>, per your choice) is created in the same folder;
+      an existing file with the same name is replaced.
+      Works on Windows XP and newer.
+      <b>.mdb</b> uses the Jet engine built into older Windows, so it usually needs no extra install.
+      Windows says it can&rsquo;t open the file? <a class="fixlink" href="#fix">See the quick fix</a>.
+    </p>
   </div>
 
   <div class="card" id="fix">
     <h2>Windows blocked the file? Quick fix</h2>
-    <p class="note" style="margin-top:0">Seeing <b>&ldquo;These files can&rsquo;t be opened &mdash; Your Internet security settings prevented one or more files from being opened&rdquo;</b>? That&rsquo;s Windows being cautious about downloaded files. Nothing is wrong with the file. Pick a fix:</p>
+
+    <p class="note" style="margin-top:0">
+      Seeing <b>&ldquo;These files can&rsquo;t be opened &mdash; Your Internet security settings prevented one or more files from being opened&rdquo;</b>?
+      That&rsquo;s Windows being cautious about downloaded files. Nothing is wrong with the file. Pick a fix:
+    </p>
+
     <div class="fixtabs">
       <button class="on" data-t="fx1">Unblock (easiest)</button>
       <button data-t="fx2">PowerShell</button>
       <button data-t="fx3">Still blocked?</button>
       <button data-t="fx4">Other errors</button>
     </div>
-    <div class="fixpanel on" id="fx1"><ol class="steps">
-      <li><div>Open <b>File Explorer</b> and go to your <b>Downloads</b> folder.</div></li>
-      <li><div>Right-click <b class="fn">SampleDB_builder.vbs</b> and choose <b>Properties</b>.</div></li>
-      <li><div>At the bottom of the General tab, tick <b>Unblock</b>, then click <b>Apply</b> and <b>OK</b>.</div></li>
-      <li><div>Double-click the file again. Your database appears in the same folder.</div></li>
-    </ol></div>
-    <div class="fixpanel" id="fx2"><ol class="steps">
-      <li><div>Open the Start menu, type <b>PowerShell</b>, and press Enter.</div></li>
-      <li><div>Paste this command and press Enter:<div class="cmd"><code id="cmdText"></code><button class="alt" id="copyCmd">Copy</button></div></div></li>
-      <li><div>Double-click <b class="fn">SampleDB_builder.vbs</b> again.</div></li>
-    </ol></div>
-    <div class="fixpanel" id="fx3"><ol class="steps">
-      <li><div>Use <b>Download CSV only</b> above. In Access go to <b>External Data &rarr; New Data Source &rarr; From File &rarr; Text File</b> and follow the wizard (tick &ldquo;First Row Contains Field Names&rdquo;).</div></li>
-      <li><div>No Unblock checkbox? Move the .vbs to your Desktop or a USB drive and try the steps again there.</div></li>
-      <li><div>On a school PC, scripts may be turned off by the administrator. Ask your teacher or IT to allow it.</div></li>
-    </ol></div>
-    <div class="fixpanel" id="fx4"><ol class="steps">
-      <li><div><b>&ldquo;Could not create the database&rdquo;</b>: choose the <b>.mdb</b> format under Database, generate again, and retry. If it still fails, that PC needs the free Microsoft Access Database Engine installed.</div></li>
-      <li><div><b>Nothing happens on double-click</b>: make sure the name ends in <b>.vbs</b>, not .vbs.txt. In File Explorer, turn on <b>View &rarr; File name extensions</b>.</div></li>
-      <li><div><b>Database not updating</b>: close the old file if it&rsquo;s open in Access, then run the script again.</div></li>
-    </ol></div>
+
+    <div class="fixpanel on" id="fx1">
+      <ol class="steps">
+        <li><div>Open <b>File Explorer</b> and go to your <b>Downloads</b> folder.</div></li>
+        <li><div>Right-click <b class="fn">SampleDB_builder.vbs</b> and choose <b>Properties</b>.</div></li>
+        <li><div>At the bottom of the General tab, tick <b>Unblock</b>, then click <b>Apply</b> and <b>OK</b>.</div></li>
+        <li><div>Double-click the file again. Your database appears in the same folder.</div></li>
+      </ol>
+    </div>
+
+    <div class="fixpanel" id="fx2">
+      <ol class="steps">
+        <li><div>Open the Start menu, type <b>PowerShell</b>, and press Enter.</div></li>
+        <li>
+          <div>
+            Paste this command and press Enter:
+            <div class="cmd">
+              <code id="cmdText"></code>
+              <button class="alt" id="copyCmd">Copy</button>
+            </div>
+          </div>
+        </li>
+        <li><div>Double-click <b class="fn">SampleDB_builder.vbs</b> again.</div></li>
+      </ol>
+    </div>
+
+    <div class="fixpanel" id="fx3">
+      <ol class="steps">
+        <li>
+          <div>
+            Use <b>Download CSV only</b> above.
+            In Access go to <b>External Data &rarr; New Data Source &rarr; From File &rarr; Text File</b>
+            and follow the wizard (tick &ldquo;First Row Contains Field Names&rdquo;).
+          </div>
+        </li>
+        <li><div>No Unblock checkbox? Move the .vbs to your Desktop or a USB drive and try the steps again there.</div></li>
+        <li><div>On a school PC, scripts may be turned off by the administrator. Ask your teacher or IT to allow it.</div></li>
+      </ol>
+    </div>
+
+    <div class="fixpanel" id="fx4">
+      <ol class="steps">
+        <li>
+          <div>
+            <b>&ldquo;Could not create the database&rdquo;</b>:
+            choose the <b>.mdb</b> format under Database, generate again, and retry.
+            If it still fails, that PC needs the free Microsoft Access Database Engine installed.
+          </div>
+        </li>
+        <li>
+          <div>
+            <b>Nothing happens on double-click</b>:
+            make sure the name ends in <b>.vbs</b>, not .vbs.txt.
+            In File Explorer, turn on <b>View &rarr; File name extensions</b>.
+          </div>
+        </li>
+        <li>
+          <div>
+            <b>Database not updating</b>:
+            close the old file if it&rsquo;s open in Access, then run the script again.
+          </div>
+        </li>
+      </ol>
+    </div>
   </div>
 
   <div class="card">
     <h2>Preview &mdash; first 8 rows</h2>
-    <div class="stats"><div><small>Rows</small><b id="sRows">0</b></div><div><small>Columns</small><b id="sCols">0</b></div><div><small>Est. size</small><b id="sSize">0 KB</b></div></div>
+
+    <div class="stats">
+      <div><small>Rows</small><b id="sRows">0</b></div>
+      <div><small>Columns</small><b id="sCols">0</b></div>
+      <div><small>Est. size</small><b id="sSize">0 KB</b></div>
+    </div>
+
     <pre class="sql" id="sql"></pre>
     <div class="tbl" id="preview"></div>
   </div>
-  <div class="foot"><span>Systems / Automation / Operations</span><span>Built with intention.</span></div>
+
+  <div class="foot">
+    <span>Systems / Automation / Operations</span>
+    <span>Built with intention.</span>
+  </div>
+
 </div>
 
 <script>
 const $=id=>document.getElementById(id);
-const P=a=>a[Math.floor(Math.random()*a.length)],I=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+
+const P=a=>a[Math.floor(Math.random()*a.length)];
+const I=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const Z=(n,l)=>('0000000000'+n).slice(-(l||2));
 const digits=n=>{let t='';while(n--)t+=I(0,9);return t;};
 const pat=t=>t.replace(/#/g,()=>I(0,9));
@@ -263,306 +508,2156 @@ const SENT=['Follow up with the client next week.','Needs review before the end 
 const STREET=['Rizal','Mabini','Bonifacio','Luna','Del Pilar','Quezon','Aguinaldo'];
 const EM=c=>(c.first+'.'+c.last).toLowerCase().replace(/[^a-z.]/g,'');
 const ADDR=()=>I(1,999)+' '+P(STREET)+' '+P(['St.','Ave.','Blvd.','Road']);
-// key: [label, natural type, generator(row, index, options)]
-const GEN={
- seq:['Sequence 1, 2, 3...','nw',(c,i)=>i],
- first:['First name','st',c=>c.first],last:['Last name','st',c=>c.last],
- mid:['Middle name','st',()=>P(LAST)],init:['Middle initial','st',()=>P('ABCDEFGHJKLMNPRSTW'.split(''))],
- prefix:['Prefix','st',()=>P(['Mr.','Ms.','Mrs.','Dr.','Hon.','Engr.'])],
- suffix:['Suffix','st',()=>Math.random()<.8?'':P(['Jr.','Sr.','III','PhD','Esq.'])],
- nick:['Nickname','st',c=>c.first.slice(0,4)],
- dob:['Date of birth','dt',()=>dO(rms(1960,2006))],
- gender:['Gender','st',(c,i,O)=>P(O.g)],pron:['Pronouns','st',()=>P(['he/him','she/her','they/them'])],
- natid:['National ID (masked)','st',()=>'***-**-'+digits(4)],lic:['License number','st',()=>'N'+pat('##-##-######')],
- title:['Job title','st',(c,i,O)=>P(O.r)],dept:['Department','st',()=>P(['HR','Finance','IT','Sales','Marketing','Operations','Legal'])],
- div:['Division / branch','st',()=>P(['North','South','East','West','Central','Head Office'])],
- empid:['Employee ID','st',(c,i)=>'EMP-'+Z(i,5)],mgr:['Manager ID','nw',(c,i,O)=>I(1,Math.max(1,Math.min(O.n,20)))],
- hire:['Hire date','dt',()=>dO(rms(2008,2025))],term:['Termination date','dt',()=>Math.random()<.85?null:dO(rms(2020,2026))],
- estatus:['Employment status','st',()=>P(['Full-Time','Part-Time','Contractor','Intern'])],
- salary:['Salary / wage','cu',()=>I(200,1500)*100],payfreq:['Pay frequency','st',()=>P(['Hourly','Weekly','Bi-weekly','Monthly'])],
- desk:['Work location / desk','st',()=>'Desk '+P('ABCDEF'.split(''))+'-'+I(1,40)],
- email:['Email','st',c=>EM(c)+'@example.com'],email2:['Backup email','st',c=>(c.first+I(1,99)).toLowerCase().replace(/[^a-z0-9]/g,'')+'@example.org'],
- phone:['Phone (555)','st',()=>pat('(555) ###-####')],ext:['Extension','st',()=>digits(4)],mobile:['Mobile number','st',()=>pat('09##-###-####')],
- cmethod:['Preferred contact','st',()=>P(['Email','Phone','SMS','Mail'])],
- addr1:['Street address','st',ADDR],addr2:['Address line 2','st',()=>Math.random()<.5?'':P(['Unit ','Suite ','Floor '])+I(1,30)],
- city:['City / location','st',(c,i,O)=>P(O.l)],state:['State / region','st',()=>P(['Metro Manila','Central Luzon','Calabarzon','Central Visayas','Davao Region','Ilocos Region'])],
- zip:['Postal code','st',()=>digits(4)],country:['Country','st',()=>P(['Philippines','United States','Japan','Singapore','Canada','Australia'])],
- lat:['Latitude','nd',()=>+(5+Math.random()*15).toFixed(6)],lon:['Longitude','nd',()=>+(117+Math.random()*9).toFixed(6)],
- acct:['Account number','st',()=>pat('ACC-########')],credit:['Credit limit','cu',()=>I(2,100)*500],
- terms:['Payment terms','st',()=>P(['Net 30','Net 60','Due on Receipt'])],taxex:['Yes / No (mostly No)','yn',()=>Math.random()<.2],
- taxid:['Tax ID / VAT','st',()=>pat('###-###-###-000')],guid:['GUID-style ID','st',()=>'{'+pat('########-####-####-####-############')+'}'],
- created:['Created date/time','dt',c=>{c.cr=rms(2023,2026);return dT(c.cr);}],
- modified:['Modified date/time','dt',c=>dT(Math.min(Date.now(),(c.cr||rms(2023,2025))+I(0,90)*864e5))],
- user:['Username','st',()=>P(['admin','jdavid','mreyes','asantos','system'])],active:['Yes / No (mostly Yes)','yn',()=>Math.random()<.9],
- word:['Random word','st',()=>P(WORDS)],sentence:['Sentence','lt',()=>P(SENT)],int:['Whole number 1-1000','nw',()=>I(1,1000)],
- dec:['Decimal 0-1000','nd',()=>+(Math.random()*1000).toFixed(2)],money:['Money 10-5000','cu',()=>+(10+Math.random()*4990).toFixed(2)],
- date:['Date 2015-2026','dt',()=>dO(rms(2015,2026))],bool:['Yes / No (50/50)','yn',()=>Math.random()<.5],
- url:['Website link','hl',()=>'https://'+P(WORDS)+'.example.com'],status:['Status list','lk',()=>P(['Active','Pending','Inactive','Archived'])],
- blank:['Leave empty','st',()=>null]
-};
-const TY=[['st','Short Text','TEXT(255)'],['lt','Long Text','MEMO'],['nw','Number (whole)','LONG'],['nd','Number (decimal)','DOUBLE'],['dt','Date/Time','DATETIME'],['cu','Currency','CURRENCY'],['an','AutoNumber','COUNTER'],['yn','Yes/No','YESNO'],['ole','OLE Object','LONGBINARY'],['hl','Hyperlink','MEMO'],['lk','Lookup Wizard','TEXT(255)']];
-const OK={st:'st lt lk hl',lt:'lt st',nw:'nw nd cu',nd:'nd cu',cu:'cu nd',dt:'dt st',yn:'yn nw',hl:'hl st lt',lk:'lk st'};
-const DEF={st:'word',lt:'sentence',nw:'int',nd:'dec',dt:'date',cu:'money',an:'seq',yn:'bool',ole:'blank',hl:'url',lk:'status'};
-const sqlT=f=>f.t==='an'?'COUNTER PRIMARY KEY':TY.filter(t=>t[0]===f.t)[0][2];
-const CATS=[
- ['\uD83D\uDC64 Personal','Prefix|Prefix|prefix;First Name|FirstName|first;Middle Name|MiddleName|mid;Middle Initial|MiddleInitial|init;Last Name|LastName|last;Suffix|Suffix|suffix;Nickname|Nickname|nick;Date of Birth|DateOfBirth|dob;Gender|Gender|gender;Pronouns|Pronouns|pron;National ID|NationalID|natid;License Number|LicenseNumber|lic'],
- ['\uD83D\uDCBC Employment','Job Title|JobTitle|title;Department|Department|dept;Division / Branch|Division|div;Employee ID|EmployeeID|empid;Manager ID|ManagerID|mgr;Hire Date|HireDate|hire;Termination Date|TerminationDate|term;Employment Status|EmploymentStatus|estatus;Salary|Salary|salary;Pay Frequency|PayFrequency|payfreq;Work Location|WorkLocation|desk'],
- ['\uD83D\uDCDE Contact','Email|Email|email;Secondary Email|SecondaryEmail|email2;Work Phone|WorkPhone|phone;Extension|Extension|ext;Mobile|Mobile|mobile;Home Phone|HomePhone|phone;Fax|Fax|phone;Preferred Contact|PreferredContact|cmethod'],
- ['\uD83D\uDCCD Location','Address Line 1|Address1|addr1;Address Line 2|Address2|addr2;City|City|city;State / Region|State|state;Postal Code|PostalCode|zip;Country|Country|country;Latitude|Latitude|lat;Longitude|Longitude|lon'],
- ['\uD83D\uDCB3 Financial','Account Number|AccountNumber|acct;Credit Limit|CreditLimit|credit;Payment Terms|PaymentTerms|terms;Billing Address|BillingAddress|addr1;Shipping Address|ShippingAddress|addr1;Tax Exempt|TaxExempt|taxex;Tax ID / VAT|TaxID|taxid'],
- ['\uD83D\uDEE1 System','Record ID|RecordID|seq|an;Created|CreatedAt|created;Created By|CreatedBy|user;Last Modified|ModifiedAt|modified;Modified By|ModifiedBy|user;Is Active|IsActive|active;GUID|RecordGUID|guid']
-].map(c=>[c[0],c[1].split(';').map(x=>{const a=x.split('|');return{p:a[0],name:a[1],gen:a[2],t:a[3]||GEN[a[2]][1]};})]);
+const FULLNAME=()=>P(FM.concat(FF))+' '+P(LAST);
 
-// ----- naming -----
-const words=n=>n.replace(/([a-z0-9])([A-Z])/g,'$1 $2').replace(/[_\-]+/g,' ').trim().split(/\s+/);
-function styleName(n,st){const w=words(n),c=x=>x.charAt(0).toUpperCase()+x.slice(1);
-  return st==='snake'?w.join('_').toLowerCase():st==='upper'?w.join('_').toUpperCase():st==='spaced'?w.map(c).join(' '):w.map(c).join('');}
+const UNI_DEPTS=[
+  'Computer Science Department',
+  'Information Technology Department',
+  'Information Systems Department',
+  'Business Administration Department',
+  'Accountancy Department',
+  'Education Department',
+  'Nursing Department',
+  'Psychology Department',
+  'Engineering Department',
+  'Hospitality Management Department',
+  'Criminology Department',
+  'Architecture Department',
+  'Communication Department',
+  'Biology Department',
+  'Mathematics Department',
+  'English Department',
+  'Social Sciences Department'
+];
+
+const UNI_COLLEGES=[
+  'College of Computing and Information Sciences',
+  'College of Business and Accountancy',
+  'College of Education',
+  'College of Engineering',
+  'College of Nursing',
+  'College of Arts and Sciences',
+  'College of Hospitality Management',
+  'College of Criminal Justice',
+  'College of Architecture',
+  'College of Communication'
+];
+
+const UNI_PROGRAMS=[
+  'BS Computer Science',
+  'BS Information Technology',
+  'BS Information Systems',
+  'BS Accountancy',
+  'BS Business Administration',
+  'BS Elementary Education',
+  'BS Secondary Education',
+  'BS Nursing',
+  'BS Psychology',
+  'BS Civil Engineering',
+  'BS Electrical Engineering',
+  'BS Hospitality Management',
+  'BS Criminology',
+  'BS Architecture',
+  'BA Communication',
+  'BA English',
+  'BS Biology',
+  'BS Mathematics'
+];
+
+const UNI_MAJORS=[
+  'Software Engineering',
+  'Data Science',
+  'Web Development',
+  'Cybersecurity',
+  'Artificial Intelligence',
+  'Accounting',
+  'Marketing',
+  'Financial Management',
+  'Human Resource Management',
+  'Operations Management',
+  'English',
+  'Mathematics',
+  'Biology',
+  'Psychology',
+  'Communication',
+  'General Studies'
+];
+
+const UNI_MINORS=[
+  'None',
+  'Business',
+  'Computer Science',
+  'Mathematics',
+  'Statistics',
+  'Communication',
+  'English',
+  'Psychology',
+  'Entrepreneurship'
+];
+
+const UNI_SECTIONS=['A','B','C','D','E','F','G'];
+const UNI_STUDENT_STATUS=['Active','Inactive','Graduated','On Leave','Suspended','Transferred','Dropped','Withdrawn'];
+const UNI_ENROLL=['Enrolled','Pre-enrolled','Waitlisted','Dropped','Withdrawn','Completed'];
+const UNI_ADMISSION=['New Student','Transferee','Returnee','Continuing Student','Cross-enrollee','International Student'];
+const UNI_SCHOLARSHIP=['None','Academic Scholarship','Athletic Scholarship','Government Scholarship','University Scholarship','Private Scholarship','Need-based Scholarship'];
+const UNI_TERM=['First Semester','Second Semester','Summer / Midyear','Short Term'];
+const UNI_CAMPUSES=['Main Campus','North Campus','South Campus','City Campus','Extension Campus'];
+const UNI_BUILDINGS=['Administration Building','Main Building','Science Building','Engineering Building','Library Building','Student Center','Business Building','Health Sciences Building'];
+const UNI_CLEARANCE=['Cleared','Pending','On Hold','For Review'];
+const UNI_GRAD=['Not Yet Eligible','Candidate','For Graduation','Graduated','Deferred'];
+const UNI_ORGS=['Student Council','Computer Society','Business Club','Engineering Society','Debate Society','Student Government','Science Club','Volunteer Organization'];
+const UNI_ORG_ROLES=['Member','President','Vice President','Secretary','Treasurer','Auditor','Committee Member'];
+const UNI_THESIS=['Not Required','Proposal','Approved','Ongoing','For Defense','Completed'];
+const UNI_ACAD_YEARS=Array.from({length:8},(_,i)=>{
+  const y=new Date().getFullYear()-5+i;
+  return y+'-'+(y+1);
+});
+
+function COURSE(){
+  return P(['CS','IT','IS','ACC','BA','EDU','NURS','PSY','ENG','BIO','MATH','COM'])+I(101,499);
+}
+
+function CLASSROOM(){
+  return P([
+    'Room 101','Room 102','Room 103','Room 201','Room 202',
+    'Room 203','Room 301','Room 302','Room 303'
+  ]);
+}
+
+/*
+  GEN:
+  [label, natural type, generator(row, index, options), default numeric range]
+
+  Numeric ranges are now supported for:
+  nw = Number (whole)
+  nd = Number (decimal)
+  cu = Currency
+*/
+const GEN={
+
+  seq:['Sequence 1, 2, 3...','nw',(c,i)=>i,[1,1000]],
+
+  first:['First name','st',c=>c.first],
+  last:['Last name','st',c=>c.last],
+  mid:['Middle name','st',()=>P(LAST)],
+  init:['Middle initial','st',()=>P('ABCDEFGHJKLMNPRSTW'.split(''))],
+
+  prefix:['Prefix','st',()=>P(['Mr.','Ms.','Mrs.','Dr.','Hon.','Engr.'])],
+  suffix:['Suffix','st',()=>Math.random()<.8?'':P(['Jr.','Sr.','III','PhD','Esq.'])],
+  nick:['Nickname','st',()=>P(FM.concat(FF)).slice(0,4)],
+
+  dob:['Date of birth','dt',()=>dO(rms(1960,2006))],
+  gender:['Gender','st',(c,i,O)=>P(O.g)],
+  pron:['Pronouns','st',()=>P(['he/him','she/her','they/them'])],
+
+  natid:['National ID (masked)','st',()=>'***-**-'+digits(4)],
+  lic:['License number','st',()=>'N'+pat('##-##-######')],
+
+  title:['Job title','st',(c,i,O)=>P(O.r)],
+  dept:['Department','st',()=>P(['HR','Finance','IT','Sales','Marketing','Operations','Legal'])],
+  div:['Division / branch','st',()=>P(['North','South','East','West','Central','Head Office'])],
+  empid:['Employee ID','st',(c,i)=>'EMP-'+Z(i,5)],
+  mgr:['Manager ID','nw',(c,i,O)=>I(1,Math.max(1,Math.min(O.n,20))),[1,20]],
+  hire:['Hire date','dt',()=>dO(rms(2008,2025))],
+  term:['Termination date','dt',()=>Math.random()<.85?null:dO(rms(2020,2026))],
+  estatus:['Employment status','st',()=>P(['Full-Time','Part-Time','Contractor','Intern'])],
+  salary:['Salary / wage','cu',()=>I(200,1500)*100,[20000,150000]],
+  payfreq:['Pay frequency','st',()=>P(['Hourly','Weekly','Bi-weekly','Monthly'])],
+  desk:['Work location / desk','st',()=>'Desk '+P('ABCDEF'.split(''))+'-'+I(1,40)],
+
+  email:['Email','st',c=>EM(c)+'@example.com'],
+  email2:['Backup email','st',c=>(c.first+I(1,99)).toLowerCase().replace(/[^a-z0-9]/g,'')+'@example.org'],
+  phone:['Phone (555)','st',()=>pat('(555) ###-####')],
+  ext:['Extension','st',()=>digits(4)],
+  mobile:['Mobile number','st',()=>pat('09##-###-####')],
+  cmethod:['Preferred contact','st',()=>P(['Email','Phone','SMS','Mail'])],
+
+  addr1:['Street address','st',ADDR],
+  addr2:['Address line 2','st',()=>Math.random()<.5?'':P(['Unit ','Suite ','Floor '])+I(1,30)],
+  city:['City / location','st',(c,i,O)=>P(O.l)],
+  state:['State / region','st',()=>P(['Metro Manila','Central Luzon','Calabarzon','Central Visayas','Davao Region','Ilocos Region'])],
+  zip:['Postal code','st',()=>digits(4)],
+  country:['Country','st',()=>P(['Philippines','United States','Japan','Singapore','Canada','Australia'])],
+  lat:['Latitude','nd',()=>+(5+Math.random()*15).toFixed(6),[5,20]],
+  lon:['Longitude','nd',()=>+(117+Math.random()*9).toFixed(6),[117,126]],
+
+  acct:['Account number','st',()=>pat('ACC-########')],
+  credit:['Credit limit','cu',()=>I(2,100)*500,[1000,50000]],
+  terms:['Payment terms','st',()=>P(['Net 30','Net 60','Due on Receipt'])],
+  taxex:['Yes / No (mostly No)','yn',()=>Math.random()<.2],
+  taxid:['Tax ID / VAT','st',()=>pat('###-###-###-000')],
+  guid:['GUID-style ID','st',()=>'{'+pat('########-####-####-####-############')+'}'],
+
+  created:['Created date/time','dt',c=>{
+    c.cr=rms(2023,2026);
+    return dT(c.cr);
+  }],
+
+  modified:['Modified date/time','dt',c=>
+    dT(Math.min(Date.now(),(c.cr||rms(2023,2025))+I(0,90)*864e5))
+  ],
+
+  user:['Username','st',()=>P(['admin','jdavid','mreyes','asantos','system'])],
+  active:['Yes / No (mostly Yes)','yn',()=>Math.random()<.9],
+
+  word:['Random word','st',()=>P(WORDS)],
+  sentence:['Sentence','lt',()=>P(SENT)],
+
+  int:['Whole number 1-1000','nw',()=>I(1,1000),[1,1000]],
+  dec:['Decimal 0-1000','nd',()=>+(Math.random()*1000).toFixed(2),[0,1000]],
+  money:['Money 10-5000','cu',()=>+(10+Math.random()*4990).toFixed(2),[10,5000]],
+
+  date:['Date 2015-2026','dt',()=>dO(rms(2015,2026))],
+  bool:['Yes / No (50/50)','yn',()=>Math.random()<.5],
+  url:['Website link','hl',()=>'https://'+P(WORDS)+'.example.com'],
+  status:['Status list','lk',()=>P(['Active','Pending','Inactive','Archived'])],
+  blank:['Leave empty','st',()=>null],
+
+  /* =========================
+     UNIVERSITY PRESETS
+     ========================= */
+
+  studentid:[
+    'Student ID',
+    'st',
+    ()=>String(I(2020,2026))+'-'+digits(7)
+  ],
+
+  coursecode:[
+    'Course / Subject Code',
+    'st',
+    COURSE
+  ],
+
+  program:[
+    'Program / Degree',
+    'st',
+    ()=>P(UNI_PROGRAMS)
+  ],
+
+  college:[
+    'College / Faculty',
+    'st',
+    ()=>P(UNI_COLLEGES)
+  ],
+
+  unidept:[
+    'University Department',
+    'st',
+    ()=>P(UNI_DEPTS)
+  ],
+
+  major:[
+    'Major',
+    'st',
+    ()=>P(UNI_MAJORS)
+  ],
+
+  minor:[
+    'Minor',
+    'st',
+    ()=>P(UNI_MINORS)
+  ],
+
+  yearlevel:[
+    'Year level 1-12',
+    'nw',
+    ()=>I(1,12),
+    [1,12]
+  ],
+
+  section:[
+    'Section',
+    'st',
+    ()=>P(UNI_SECTIONS)
+  ],
+
+  acadyear:[
+    'Academic Year',
+    'st',
+    ()=>P(UNI_ACAD_YEARS)
+  ],
+
+  acadterm:[
+    'Semester / Term',
+    'st',
+    ()=>P(UNI_TERM)
+  ],
+
+  studentstatus:[
+    'Student Status',
+    'st',
+    ()=>P(UNI_STUDENT_STATUS)
+  ],
+
+  enrollstatus:[
+    'Enrollment Status',
+    'st',
+    ()=>P(UNI_ENROLL)
+  ],
+
+  admission:[
+    'Admission Type',
+    'st',
+    ()=>P(UNI_ADMISSION)
+  ],
+
+  scholarship:[
+    'Scholarship Type',
+    'st',
+    ()=>P(UNI_SCHOLARSHIP)
+  ],
+
+  gpa:[
+    'GPA 1.00-5.00',
+    'nd',
+    ()=>+(1+Math.random()*4).toFixed(2),
+    [1,5]
+  ],
+
+  units:[
+    'Units This Term 0-30',
+    'nw',
+    ()=>I(0,30),
+    [0,30]
+  ],
+
+  totalunits:[
+    'Total Units 0-180',
+    'nw',
+    ()=>I(0,180),
+    [0,180]
+  ],
+
+  grade:[
+    'Grade / Mark 60-100',
+    'nd',
+    ()=>+(60+Math.random()*40).toFixed(2),
+    [60,100]
+  ],
+
+  attendance:[
+    'Attendance % 0-100',
+    'nd',
+    ()=>+(Math.random()*100).toFixed(2),
+    [0,100]
+  ],
+
+  campus:[
+    'Campus',
+    'st',
+    ()=>P(UNI_CAMPUSES)
+  ],
+
+  building:[
+    'Building',
+    'st',
+    ()=>P(UNI_BUILDINGS)
+  ],
+
+  room:[
+    'Room',
+    'st',
+    CLASSROOM
+  ],
+
+  schedule:[
+    'Class Schedule',
+    'st',
+    ()=>P([
+      'MWF 7:00 AM - 8:00 AM',
+      'MWF 8:00 AM - 9:00 AM',
+      'MWF 9:00 AM - 10:00 AM',
+      'MWF 10:00 AM - 11:00 AM',
+      'TTh 1:00 PM - 2:30 PM',
+      'TTh 3:00 PM - 4:30 PM',
+      'Saturday 8:00 AM - 11:00 AM'
+    ])
+  ],
+
+  instructor:[
+    'Instructor / Professor',
+    'st',
+    FULLNAME
+  ],
+
+  adviser:[
+    'Academic Adviser',
+    'st',
+    FULLNAME
+  ],
+
+  curriculum:[
+    'Curriculum',
+    'st',
+    ()=>{
+      const y=I(new Date().getFullYear()-6,new Date().getFullYear());
+      return y+' Curriculum';
+    }
+  ],
+
+  gradstatus:[
+    'Graduation Status',
+    'st',
+    ()=>P(UNI_GRAD)
+  ],
+
+  clearance:[
+    'Clearance Status',
+    'st',
+    ()=>P(UNI_CLEARANCE)
+  ],
+
+  organization:[
+    'Student Organization',
+    'st',
+    ()=>P(UNI_ORGS)
+  ],
+
+  orgrole:[
+    'Organization Role',
+    'st',
+    ()=>P(UNI_ORG_ROLES)
+  ],
+
+  thesis:[
+    'Thesis / Capstone Status',
+    'st',
+    ()=>P(UNI_THESIS)
+  ]
+};
+
+const TY=[
+  ['st','Short Text','TEXT(255)'],
+  ['lt','Long Text','MEMO'],
+  ['nw','Number (whole)','LONG'],
+  ['nd','Number (decimal)','DOUBLE'],
+  ['dt','Date/Time','DATETIME'],
+  ['cu','Currency','CURRENCY'],
+  ['an','AutoNumber','COUNTER'],
+  ['yn','Yes/No','YESNO'],
+  ['ole','OLE Object','LONGBINARY'],
+  ['hl','Hyperlink','MEMO'],
+  ['lk','Lookup Wizard','TEXT(255)']
+];
+
+const OK={
+  st:'st lt lk hl',
+  lt:'lt st',
+  nw:'nw nd cu',
+  nd:'nd cu',
+  cu:'cu nd',
+  dt:'dt st',
+  yn:'yn nw',
+  hl:'hl st lt',
+  lk:'lk st'
+};
+
+const DEF={
+  st:'word',
+  lt:'sentence',
+  nw:'int',
+  nd:'dec',
+  dt:'date',
+  cu:'money',
+  an:'seq',
+  yn:'bool',
+  ole:'blank',
+  hl:'url',
+  lk:'status'
+};
+
+const NUM_TYPES=new Set(['nw','nd','cu']);
+
+const NUM_DEFAULTS={
+  nw:[1,1000],
+  nd:[0,1000],
+  cu:[10,5000]
+};
+
+const sqlT=f=>f.t==='an'
+  ?'COUNTER PRIMARY KEY'
+  :TY.filter(t=>t[0]===f.t)[0][2];
+
+/*
+  Field preset format:
+  Display Name | Actual Field Name | Generator | Type | Internal Preset ID
+*/
+const CATS=[
+  [
+    '\uD83D\uDC64 Personal',
+    'Prefix|Prefix|prefix;First Name|FirstName|first;Middle Name|MiddleName|mid;Middle Initial|MiddleInitial|init;Last Name|LastName|last;Suffix|Suffix|suffix;Nickname|Nickname|nick;Date of Birth|DateOfBirth|dob;Gender|Gender|gender;Pronouns|Pronouns|pron;National ID|NationalID|natid;License Number|LicenseNumber|lic'
+  ],
+
+  [
+    '\uD83D\uDCBC Employment',
+    'Job Title|JobTitle|title;Department|Department|dept;Division / Branch|Division|div;Employee ID|EmployeeID|empid;Manager ID|ManagerID|mgr;Hire Date|HireDate|hire;Termination Date|TerminationDate|term;Employment Status|EmploymentStatus|estatus;Salary|Salary|salary;Pay Frequency|PayFrequency|payfreq;Work Location|WorkLocation|desk'
+  ],
+
+  [
+    '\uD83D\uDCDE Contact',
+    'Email|Email|email;Secondary Email|SecondaryEmail|email2;Work Phone|WorkPhone|phone;Extension|Extension|ext;Mobile|Mobile|mobile;Home Phone|HomePhone|phone;Fax|Fax|phone;Preferred Contact|PreferredContact|cmethod'
+  ],
+
+  [
+    '\uD83D\uDCCD Location',
+    'Address Line 1|Address1|addr1;Address Line 2|Address2|addr2;City|City|city;State / Region|State|state;Postal Code|PostalCode|zip;Country|Country|country;Latitude|Latitude|lat;Longitude|Longitude|lon'
+  ],
+
+  [
+    '\uD83D\uDCB3 Financial',
+    'Account Number|AccountNumber|acct;Credit Limit|CreditLimit|credit;Payment Terms|PaymentTerms|terms;Billing Address|BillingAddress|addr1;Shipping Address|ShippingAddress|addr1;Tax Exempt|TaxExempt|taxex;Tax ID / VAT|TaxID|taxid'
+  ],
+
+  [
+    '\uD83D\uDEE1 System',
+    'Record ID|RecordID|seq|an;Created|CreatedAt|created;Created By|CreatedBy|user;Last Modified|ModifiedAt|modified;Modified By|ModifiedBy|user;Is Active|IsActive|active;GUID|RecordGUID|guid'
+  ],
+
+  [
+    '\uD83C\uDF93 University',
+    'Student ID|StudentID|studentid;Course / Subject Code|CourseCode|coursecode;Program / Degree|Program|program;College / Faculty|College|college;Department|Department|unidept|st|university.department;Major|Major|major;Minor|Minor|minor;Year Level|YearLevel|yearlevel|nw|university.yearlevel;Section|Section|section;Academic Year|AcademicYear|acadyear;Semester / Term|Semester|acadterm;Student Status|StudentStatus|studentstatus;Enrollment Status|EnrollmentStatus|enrollstatus;Admission Type|AdmissionType|admission;Scholarship Type|ScholarshipType|scholarship;GPA|GPA|gpa|nd|university.gpa;Units This Term|UnitsThisTerm|units|nw|university.units;Total Units|TotalUnits|totalunits|nw|university.totalunits;Grade / Mark|Grade|grade|nd|university.grade;Attendance %|AttendancePercent|attendance|nd|university.attendance;Campus|Campus|campus;Building|Building|building;Room|Room|room;Class Schedule|ClassSchedule|schedule;Instructor / Professor|Instructor|instructor;Academic Adviser|AcademicAdviser|adviser;Curriculum|Curriculum|curriculum;Graduation Status|GraduationStatus|gradstatus;Clearance Status|ClearanceStatus|clearance;Student Organization|StudentOrganization|organization;Organization Role|OrganizationRole|orgrole;Thesis / Capstone Status|ThesisStatus|thesis'
+  ]
+].map(c=>[
+  c[0],
+  c[1].split(';').map(x=>{
+    const a=x.split('|');
+    const gen=a[2];
+    return{
+      p:a[0],
+      name:a[1],
+      gen:gen,
+      t:a[3]||GEN[gen][1],
+      id:a[4]||a[0]
+    };
+  })
+]);
+
+/* ----- naming ----- */
+
+const words=n=>
+  n.replace(/([a-z0-9])([A-Z])/g,'$1 $2')
+   .replace(/[_\-]+/g,' ')
+   .trim()
+   .split(/\s+/);
+
+function styleName(n,st){
+  const w=words(n);
+  const c=x=>x.charAt(0).toUpperCase()+x.slice(1);
+
+  return st==='snake'
+    ?w.join('_').toLowerCase()
+    :st==='upper'
+      ?w.join('_').toUpperCase()
+      :st==='spaced'
+        ?w.map(c).join(' ')
+        :w.map(c).join('');
+}
+
 const colName=n=>clean(n).replace(/[\[\]\.!`"']/g,'').trim();
 
-// ----- field state -----
-let F=[],cat=0,pv;
-const dp=()=>{clearTimeout(pv);pv=setTimeout(preview,350);};
-const selOpts=(arr,cur)=>arr.map(a=>'<option value="'+a[0]+'"'+(a[0]===cur?' selected':'')+'>'+esc(a[1])+'</option>').join('');
+/* ----- field state ----- */
+
+let F=[];
+let cat=0;
+let pv;
+
+function isNumericType(t){
+  return NUM_TYPES.has(t);
+}
+
+function defaultRangeForField(f){
+  if(GEN[f.gen]&&GEN[f.gen][3])return GEN[f.gen][3];
+  return NUM_DEFAULTS[f.t]||[0,1000];
+}
+
+function seedRange(f){
+  if(!isNumericType(f.t)||f.t==='an')return;
+
+  const rr=defaultRangeForField(f);
+
+  if(f.min==null||!Number.isFinite(Number(f.min)))f.min=rr[0];
+  if(f.max==null||!Number.isFinite(Number(f.max)))f.max=rr[1];
+}
+
+function rangeBounds(f,O){
+  const rr=defaultRangeForField(f);
+
+  let min=Number(f.min);
+  let max=Number(f.max);
+
+  if(!Number.isFinite(min))min=rr[0];
+  if(!Number.isFinite(max))max=rr[1];
+
+  /*
+    Manager IDs retain the old behavior when the user has not
+    explicitly changed the range.
+  */
+  if(f.gen==='mgr'&&!f.rangeCustom){
+    max=Math.min(max,Math.max(1,O.n));
+  }
+
+  if(min>max){
+    const x=min;
+    min=max;
+    max=x;
+  }
+
+  if(f.t==='nw'){
+    min=Math.ceil(min);
+    max=Math.floor(max);
+
+    if(max<min)max=min;
+  }
+
+  return[min,max];
+}
+
+function generateValue(f,c,i,O){
+
+  if(f.t==='an')return i;
+  if(f.t==='ole')return null;
+
+  /*
+    Preserve sequence behavior.
+  */
+  if(f.gen==='seq')return i;
+
+  /*
+    Numeric fields use the field's configured range.
+  */
+  if(f.t==='nw'){
+    const r=rangeBounds(f,O);
+    return I(r[0],r[1]);
+  }
+
+  if(f.t==='nd'){
+    const r=rangeBounds(f,O);
+    return +(r[0]+Math.random()*(r[1]-r[0])).toFixed(2);
+  }
+
+  if(f.t==='cu'){
+    const r=rangeBounds(f,O);
+    return +(r[0]+Math.random()*(r[1]-r[0])).toFixed(2);
+  }
+
+  const g=GEN[f.gen];
+
+  if(!g){
+    return null;
+  }
+
+  return g[2](c,i,O);
+}
+
+function dp(){
+  clearTimeout(pv);
+  pv=setTimeout(preview,350);
+}
+
+const selOpts=(arr,cur)=>
+  arr.map(a=>
+    '<option value="'+a[0]+'"'+
+    (a[0]===cur?' selected':'')+
+    '>'+esc(a[1])+
+    '</option>'
+  ).join('');
+
 const GOPTS=Object.keys(GEN).map(k=>[k,GEN[k][0]]);
+
 function render(anim){
-  const L=$('flist'); L.innerHTML='';
+
+  const L=$('flist');
+  L.innerHTML='';
+
   F.forEach((f,i)=>{
-    const r=document.createElement('div'); r.className='frow2'+(f.isNew&&anim?' new':''); f.isNew=false;
-    r.innerHTML='<div class="grip" tabindex="0" role="button" aria-label="Drag to reorder"></div><span class="fno">'+Z(i+1)+'</span><input type="text" class="nm" placeholder="Field name"><select class="ty">'+selOpts(TY,f.t)+'</select><select class="gn">'+selOpts(GOPTS,f.gen)+'</select><span class="x" title="Remove field">&times;</span>';
-    const nm=r.querySelector('.nm'),ty=r.querySelector('.ty'),gn=r.querySelector('.gn');
-    nm.value=f.name; gn.disabled=(f.t==='an'||f.t==='ole');
-    nm.oninput=()=>{f.name=nm.value;dp();};
-    ty.onchange=()=>{f.t=ty.value;if(f.t!=='an'&&f.t!=='ole'&&!(OK[GEN[f.gen][1]]||'').split(' ').includes(f.t))f.gen=DEF[f.t];if(f.t==='an')f.gen='seq';render(false);preview();};
-    gn.onchange=()=>{f.gen=gn.value;const nt=GEN[f.gen][1];if(!(OK[nt]||'').split(' ').includes(f.t))f.t=nt;render(false);preview();};
-    r.querySelector('.x').onclick=()=>{r.classList.add('out');setTimeout(()=>{F.splice(F.indexOf(f),1);render(false);drawChips();preview();},230);};
+
+    seedRange(f);
+
+    const r=document.createElement('div');
+
+    r.className='frow2'+(f.isNew&&anim?' new':'');
+    f.isNew=false;
+
+    const showRange=
+      isNumericType(f.t)&&
+      f.t!=='an'&&
+      f.gen!=='seq';
+
+    r.innerHTML=
+      '<div class="grip" tabindex="0" role="button" aria-label="Drag to reorder"></div>'+
+      '<span class="fno">'+Z(i+1)+'</span>'+
+      '<input type="text" class="nm" placeholder="Field name">'+
+      '<select class="ty">'+selOpts(TY,f.t)+'</select>'+
+      '<select class="gn">'+selOpts(GOPTS,f.gen)+'</select>'+
+      '<div class="rng"'+(showRange?'':' hidden')+'>'+
+        '<span class="rngLabel">Range</span>'+
+        '<input type="number" class="rmin" aria-label="Minimum value" title="Minimum value">'+
+        '<span class="rngTo">to</span>'+
+        '<input type="number" class="rmax" aria-label="Maximum value" title="Maximum value">'+
+      '</div>'+
+      '<span class="x" title="Remove field">&times;</span>';
+
+    const nm=r.querySelector('.nm');
+    const ty=r.querySelector('.ty');
+    const gn=r.querySelector('.gn');
+    const rng=r.querySelector('.rng');
+    const rmin=r.querySelector('.rmin');
+    const rmax=r.querySelector('.rmax');
+
+    nm.value=f.name;
+
+    gn.disabled=(f.t==='an'||f.t==='ole');
+
+    if(showRange){
+      seedRange(f);
+
+      rmin.value=f.min;
+      rmax.value=f.max;
+
+      const step=f.t==='nw'?'1':'0.01';
+
+      rmin.step=step;
+      rmax.step=step;
+    }
+
+    nm.oninput=()=>{
+      f.name=nm.value;
+      dp();
+    };
+
+    ty.onchange=()=>{
+
+      f.t=ty.value;
+
+      if(
+        f.t!=='an'&&
+        f.t!=='ole'&&
+        !(OK[GEN[f.gen][1]]||'').split(' ').includes(f.t)
+      ){
+        f.gen=DEF[f.t];
+        f.rangeCustom=false;
+      }
+
+      if(f.t==='an'){
+        f.gen='seq';
+      }
+
+      if(f.t==='ole'){
+        f.gen='blank';
+      }
+
+      if(isNumericType(f.t)){
+        seedRange(f);
+      }
+
+      render(false);
+      preview();
+    };
+
+    gn.onchange=()=>{
+
+      f.gen=gn.value;
+
+      const nt=GEN[f.gen][1];
+
+      if(!(OK[nt]||'').split(' ').includes(f.t)){
+        f.t=nt;
+        f.rangeCustom=false;
+      }
+
+      if(f.t==='an'){
+        f.gen='seq';
+      }
+
+      if(f.t==='ole'){
+        f.gen='blank';
+      }
+
+      if(isNumericType(f.t)){
+        /*
+          Generator presets such as Year Level, GPA, Units,
+          and Grade automatically load their own sensible range.
+          Once the user edits Min/Max, that custom range remains.
+        */
+        if(!f.rangeCustom){
+          const rr=defaultRangeForField(f);
+          f.min=rr[0];
+          f.max=rr[1];
+        }else{
+          seedRange(f);
+        }
+      }
+
+      render(false);
+      preview();
+    };
+
+    if(showRange){
+
+      rmin.oninput=()=>{
+        f.min=rmin.value===''?null:Number(rmin.value);
+        f.rangeCustom=true;
+        dp();
+      };
+
+      rmax.oninput=()=>{
+        f.max=rmax.value===''?null:Number(rmax.value);
+        f.rangeCustom=true;
+        dp();
+      };
+
+      rmin.onchange=()=>{
+        f.min=rmin.value===''?null:Number(rmin.value);
+        f.rangeCustom=true;
+        preview();
+      };
+
+      rmax.onchange=()=>{
+        f.max=rmax.value===''?null:Number(rmax.value);
+        f.rangeCustom=true;
+        preview();
+      };
+    }
+
+    r.querySelector('.x').onclick=()=>{
+      r.classList.add('out');
+
+      setTimeout(()=>{
+        F.splice(F.indexOf(f),1);
+        render(false);
+        drawChips();
+        preview();
+      },230);
+    };
+
     L.appendChild(r);
   });
 }
-function addF(o){o.isNew=true;F.push(o);render(true);}
-function drawTabs(){$('ctabs').innerHTML=CATS.map((c,i)=>'<button data-i="'+i+'"'+(i===cat?' class="on"':'')+'>'+c[0]+'</button>').join('');}
-function drawChips(){$('chips').innerHTML=CATS[cat][1].map((p,i)=>'<span class="chip'+(F.some(f=>f.p===p.p)?' on':'')+'" tabindex="0" data-i="'+i+'">'+esc(p.p)+'</span>').join('');}
-$('ctabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;cat=+b.dataset.i;drawTabs();drawChips();};
-const chipToggle=e=>{const c=e.target.closest('.chip');if(!c)return;const p=CATS[cat][1][+c.dataset.i],k=F.findIndex(f=>f.p===p.p);
-  if(k>-1){F.splice(k,1);render(false);}else addF({name:styleName(p.name,$('nstyle').value),t:p.t,gen:p.gen,p:p.p});
-  drawChips();preview();};
-$('chips').onclick=chipToggle;
-$('chips').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();chipToggle(e);}};
-$('addBtn').onclick=()=>{let n=1;const names=F.map(f=>f.name);while(names.includes(styleName('NewField'+n,$('nstyle').value)))n++;
-  addF({name:styleName('NewField'+n,$('nstyle').value),t:'st',gen:'word'});
-  const rows=$('flist').children;rows[rows.length-1].querySelector('.nm').focus();preview();};
-$('nstyle').onchange=()=>{F.forEach(f=>{f.name=styleName(f.name,$('nstyle').value);});render(false);preview();};
 
-// ----- drag to reorder (smooth, pointer-based) -----
+function hydratePreset(o){
+
+  const f={
+    name:o.name,
+    t:o.t,
+    gen:o.gen,
+    p:o.p,
+    pid:o.id,
+    rangeCustom:false
+  };
+
+  if(isNumericType(f.t)){
+    const rr=defaultRangeForField(f);
+
+    f.min=o.min!=null?o.min:rr[0];
+    f.max=o.max!=null?o.max:rr[1];
+
+    if(o.min!=null||o.max!=null){
+      f.rangeCustom=false;
+    }
+  }
+
+  return f;
+}
+
+function addF(o){
+  o.isNew=true;
+
+  if(isNumericType(o.t)){
+    seedRange(o);
+  }
+
+  F.push(o);
+  render(true);
+}
+
+function drawTabs(){
+  $('ctabs').innerHTML=CATS.map((c,i)=>
+    '<button data-i="'+i+'"'+
+    (i===cat?' class="on"':'')+'>'+
+    c[0]+
+    '</button>'
+  ).join('');
+}
+
+function drawChips(){
+
+  $('chips').innerHTML=CATS[cat][1].map((p,i)=>{
+
+    const on=F.some(f=>(f.pid||f.p)===p.id);
+
+    return '<span class="chip'+
+      (on?' on':'')+
+      '" tabindex="0" data-i="'+i+'">'+
+      esc(p.p)+
+      '</span>';
+  }).join('');
+}
+
+$('ctabs').onclick=e=>{
+  const b=e.target.closest('button');
+  if(!b)return;
+
+  cat=+b.dataset.i;
+
+  drawTabs();
+  drawChips();
+};
+
+const chipToggle=e=>{
+
+  const c=e.target.closest('.chip');
+  if(!c)return;
+
+  const p=CATS[cat][1][+c.dataset.i];
+
+  const k=F.findIndex(f=>(f.pid||f.p)===p.id);
+
+  if(k>-1){
+    F.splice(k,1);
+    render(false);
+  }else{
+
+    const f=hydratePreset(p);
+
+    addF(f);
+  }
+
+  drawChips();
+  preview();
+};
+
+$('chips').onclick=chipToggle;
+
+$('chips').onkeydown=e=>{
+  if(e.key==='Enter'||e.key===' '){
+    e.preventDefault();
+    chipToggle(e);
+  }
+};
+
+$('addBtn').onclick=()=>{
+
+  let n=1;
+  const names=F.map(f=>f.name);
+
+  while(names.includes(styleName('NewField'+n,$('nstyle').value))){
+    n++;
+  }
+
+  addF({
+    name:styleName('NewField'+n,$('nstyle').value),
+    t:'st',
+    gen:'word',
+    rangeCustom:false
+  });
+
+  const rows=$('flist').children;
+
+  rows[rows.length-1].querySelector('.nm').focus();
+
+  preview();
+};
+
+$('nstyle').onchange=()=>{
+
+  F.forEach(f=>{
+    f.name=styleName(f.name,$('nstyle').value);
+  });
+
+  render(false);
+  preview();
+};
+
+
+/* ----- drag to reorder (smooth, pointer-based) ----- */
+
 let dg=null;
+
 $('flist').addEventListener('pointerdown',e=>{
-  const g=e.target.closest('.grip');if(!g)return;e.preventDefault();
-  const el=g.parentNode,rows=[].slice.call($('flist').children),from=rows.indexOf(el);
-  dg={el:el,rows:rows,from:from,to:from,step:el.offsetHeight+8,h:el.offsetHeight,y0:e.clientY,top0:el.offsetTop,mids:rows.map(r=>r.offsetTop+r.offsetHeight/2)};
+
+  const g=e.target.closest('.grip');
+  if(!g)return;
+
+  e.preventDefault();
+
+  const el=g.parentNode;
+  const rows=[].slice.call($('flist').children);
+  const from=rows.indexOf(el);
+
+  dg={
+    el:el,
+    rows:rows,
+    from:from,
+    to:from,
+    step:el.offsetHeight+8,
+    h:el.offsetHeight,
+    y0:e.clientY,
+    top0:el.offsetTop,
+    mids:rows.map(r=>r.offsetTop+r.offsetHeight/2)
+  };
+
   el.classList.remove('new');
   el.classList.add('drag');
-  try{g.setPointerCapture(e.pointerId);}catch(x){}
-});
-addEventListener('pointermove',e=>{
-  if(!dg)return;const dy=e.clientY-dg.y0,c=dg.top0+dg.h/2+dy;let to=dg.from;
-  dg.el.style.transform='translateY('+dy+'px) scale(1.015)';
-  dg.mids.forEach((m,i)=>{if(i>dg.from&&c>m)to=Math.max(to,i);if(i<dg.from&&c<m)to=Math.min(to,i);});
-  dg.to=to;
-  dg.rows.forEach((r,i)=>{if(r===dg.el)return;let sh=0;if(dg.from<to&&i>dg.from&&i<=to)sh=-dg.step;if(dg.from>to&&i<dg.from&&i>=to)sh=dg.step;r.style.transform=sh?'translateY('+sh+'px)':'';});
-});
-function dropDrag(){
-  if(!dg)return;const d=dg;dg=null;
-  d.el.style.transition='transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .2s';
-  d.el.style.transform='translateY('+((d.to-d.from)*d.step)+'px)';
-  setTimeout(()=>{const m=F.splice(d.from,1)[0];F.splice(d.to,0,m);render(false);preview();},200);
-}
-addEventListener('pointerup',dropDrag);addEventListener('pointercancel',dropDrag);
-$('flist').addEventListener('keydown',e=>{
-  const g=e.target.closest&&e.target.closest('.grip');if(!g||!/^Arrow(Up|Down)$/.test(e.key))return;e.preventDefault();
-  const i=[].indexOf.call($('flist').children,g.parentNode),j=i+(e.key==='ArrowUp'?-1:1);if(j<0||j>=F.length)return;
-  const m=F.splice(i,1)[0];F.splice(j,0,m);render(false);$('flist').children[j].querySelector('.grip').focus();preview();
+
+  try{
+    g.setPointerCapture(e.pointerId);
+  }catch(x){}
 });
 
-// ----- data -----
-const getN=()=>Math.min(50000,Math.max(1,parseInt($('rows').value)||1));
-function opt(n){const g=list($('genders').value),r=list($('roles').value),l=list($('locs').value);
-  return{g:g.length?g:['Male','Female'],r:r.length?r:['Staff'],l:l.length?l:['Manila'],n:n};}
-function active(){return F.map(f=>({col:colName(f.name),t:f.t,gen:f.gen}));}
+addEventListener('pointermove',e=>{
+
+  if(!dg)return;
+
+  const dy=e.clientY-dg.y0;
+  const c=dg.top0+dg.h/2+dy;
+  let to=dg.from;
+
+  dg.el.style.transform=
+    'translateY('+dy+'px) scale(1.015)';
+
+  dg.mids.forEach((m,i)=>{
+    if(i>dg.from&&c>m)to=Math.max(to,i);
+    if(i<dg.from&&c<m)to=Math.min(to,i);
+  });
+
+  dg.to=to;
+
+  dg.rows.forEach((r,i)=>{
+
+    if(r===dg.el)return;
+
+    let sh=0;
+
+    if(dg.from<to&&i>dg.from&&i<=to)sh=-dg.step;
+    if(dg.from>to&&i<dg.from&&i>=to)sh=dg.step;
+
+    r.style.transform=
+      sh?'translateY('+sh+'px)':'';
+  });
+});
+
+function dropDrag(){
+
+  if(!dg)return;
+
+  const d=dg;
+
+  dg=null;
+
+  d.el.style.transition=
+    'transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .2s';
+
+  d.el.style.transform=
+    'translateY('+((d.to-d.from)*d.step)+'px)';
+
+  setTimeout(()=>{
+
+    const m=F.splice(d.from,1)[0];
+
+    F.splice(d.to,0,m);
+
+    render(false);
+    preview();
+
+  },200);
+}
+
+addEventListener('pointerup',dropDrag);
+addEventListener('pointercancel',dropDrag);
+
+$('flist').addEventListener('keydown',e=>{
+
+  const g=e.target.closest&&e.target.closest('.grip');
+
+  if(
+    !g||
+    !/^Arrow(Up|Down)$/.test(e.key)
+  )return;
+
+  e.preventDefault();
+
+  const i=[].indexOf.call(
+    $('flist').children,
+    g.parentNode
+  );
+
+  const j=i+(e.key==='ArrowUp'?-1:1);
+
+  if(j<0||j>=F.length)return;
+
+  const m=F.splice(i,1)[0];
+
+  F.splice(j,0,m);
+
+  render(false);
+
+  $('flist').children[j]
+    .querySelector('.grip')
+    .focus();
+
+  preview();
+});
+
+
+/* ----- data ----- */
+
+const getN=()=>Math.min(
+  50000,
+  Math.max(
+    1,
+    parseInt($('rows').value)||1
+  )
+);
+
+function opt(n){
+
+  const g=list($('genders').value);
+  const r=list($('roles').value);
+  const l=list($('locs').value);
+
+  return{
+    g:g.length?g:['Male','Female'],
+    r:r.length?r:['Staff'],
+    l:l.length?l:['Manila'],
+    n:n
+  };
+}
+
+function active(){
+
+  return F.map(f=>({
+    col:colName(f.name),
+    t:f.t,
+    gen:f.gen,
+    min:f.min,
+    max:f.max,
+    rangeCustom:!!f.rangeCustom,
+    p:f.p,
+    pid:f.pid
+  }));
+}
+
 function makeRows(n,fs){
-  const O=opt(n),b=(+$('blank').value||0)/100,out=[],all=FM.concat(FF);
-  for(let i=1;i<=n;i++){const c={first:P(all),last:P(LAST)};
-    out.push(fs.map(f=>{if(f.t==='an')return i;if(f.t==='ole')return null;let v=GEN[f.gen][2](c,i,O);if(b&&Math.random()<b)v=null;return v;}));}
-  return out;}
-function lkVals(f){const s={},c={first:'A',last:'B'},O=opt(50);for(let k=0;k<80;k++){const v=GEN[f.gen][2](c,k+1,O);if(v!=null&&v!=='')s[v]=1;}
-  const a=Object.keys(s).map(v=>String(v).replace(/["']/g,''));return a.length&&a.length<=25?a:[];}
-const disp=(v,f)=>v==null?'':typeof v==='boolean'?(v?'Yes':'No'):f.t==='ole'?'':String(v);
+
+  const O=opt(n);
+  const b=(+$('blank').value||0)/100;
+  const out=[];
+  const all=FM.concat(FF);
+
+  for(let i=1;i<=n;i++){
+
+    const c={
+      first:P(all),
+      last:P(LAST)
+    };
+
+    out.push(
+      fs.map(f=>{
+
+        if(f.t==='an')return i;
+        if(f.t==='ole')return null;
+
+        let v=generateValue(f,c,i,O);
+
+        if(
+          b&&
+          Math.random()<b&&
+          f.t!=='an'
+        ){
+          v=null;
+        }
+
+        return v;
+      })
+    );
+  }
+
+  return out;
+}
+
+function lkVals(f){
+
+  const s={};
+  const c={first:'A',last:'B'};
+  const O=opt(50);
+
+  for(let k=0;k<80;k++){
+
+    const v=generateValue(f,c,k+1,O);
+
+    if(
+      v!=null&&
+      v!==''
+    ){
+      s[v]=1;
+    }
+  }
+
+  const a=Object.keys(s)
+    .map(v=>String(v).replace(/["']/g,''));
+
+  return a.length&&a.length<=25?a:[];
+}
+
+const disp=(v,f)=>
+  v==null
+    ?''
+    :typeof v==='boolean'
+      ?(v?'Yes':'No')
+      :f.t==='ole'
+        ?''
+        :String(v);
+
 function preview(){
+
   const fs=active();
-  if(!fs.length){$('preview').innerHTML='<p class="note">Add at least one field.</p>';afterPreview([]);return;}
+
+  if(!fs.length){
+
+    $('preview').innerHTML=
+      '<p class="note">Add at least one field.</p>';
+
+    afterPreview([]);
+
+    return;
+  }
+
   const rows=makeRows(8,fs);
-  $('preview').innerHTML='<table><tr>'+fs.map(f=>'<th>'+esc(f.col)+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+r.map((v,k)=>'<td>'+esc(disp(v,fs[k]))+'</td>').join('')+'</tr>').join('')+'</table>';
+
+  $('preview').innerHTML=
+    '<table><tr>'+
+    fs.map(f=>'<th>'+esc(f.col)+'</th>').join('')+
+    '</tr>'+
+    rows.map(r=>
+      '<tr>'+
+      r.map((v,k)=>
+        '<td>'+
+        esc(disp(v,fs[k]))+
+        '</td>'
+      ).join('')+
+      '</tr>'
+    ).join('')+
+    '</table>';
+
   afterPreview(fs);
 }
-function download(name,text,mime){const blob=new Blob([text],{type:mime});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+
+function download(name,text,mime){
+
+  const blob=new Blob([text],{type:mime});
+  const a=document.createElement('a');
+
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(
+    ()=>URL.revokeObjectURL(a.href),
+    2000
+  );
+}
+
 function needFields(){
-  const fs=active();if(!fs.length){alert('Add at least one field.');return null;}
-  const seen={};let an=0;
-  for(const f of fs){if(!f.col){alert('Every field needs a name.');return null;}
-    const k=f.col.toLowerCase();if(seen[k]){alert('Two fields are named "'+f.col+'". Column names must be unique.');return null;}
-    seen[k]=1;if(f.t==='an')an++;}
-  if(an>1){alert('Access allows only one AutoNumber field per table.');return null;}
-  return fs;}
-const q=t=>"'"+clean(t).replace(/'/g,"''")+"'";
-const vq=t=>String(t).replace(/"/g,'""');
+
+  const fs=active();
+
+  if(!fs.length){
+    alert('Add at least one field.');
+    return null;
+  }
+
+  const seen={};
+  let an=0;
+
+  for(const f of fs){
+
+    if(!f.col){
+      alert('Every field needs a name.');
+      return null;
+    }
+
+    const k=f.col.toLowerCase();
+
+    if(seen[k]){
+      alert(
+        'Two fields are named "'+
+        f.col+
+        '". Column names must be unique.'
+      );
+
+      return null;
+    }
+
+    seen[k]=1;
+
+    if(f.t==='an')an++;
+  }
+
+  if(an>1){
+    alert(
+      'Access allows only one AutoNumber field per table.'
+    );
+
+    return null;
+  }
+
+  return fs;
+}
+
+const q=t=>
+  "'"+
+  clean(t).replace(/'/g,"''")+
+  "'";
+
+const vq=t=>
+  String(t).replace(/"/g,'""');
+
 function enc(v,f){
-  if(v==null||v===''||f.t==='ole')return 'NULL';
-  switch(f.t){case 'an':return v;case 'nw':case 'nd':case 'cu':return typeof v==='boolean'?(v?1:0):(+v||0);
-    case 'yn':return v?-1:0;case 'dt':return '#'+v+'#';case 'hl':return q(v+'#'+v+'#');default:return q(v);}}
+
+  if(
+    v==null||
+    v===''||
+    f.t==='ole'
+  ){
+    return 'NULL';
+  }
+
+  switch(f.t){
+
+    case 'an':
+      return v;
+
+    case 'nw':
+    case 'nd':
+    case 'cu':
+      return typeof v==='boolean'
+        ?(v?1:0)
+        :(+v||0);
+
+    case 'yn':
+      return v?-1:0;
+
+    case 'dt':
+      return '#'+v+'#';
+
+    case 'hl':
+      return q(v+'#'+v+'#');
+
+    default:
+      return q(v);
+  }
+}
+
+
+/* ----- generate Access builder ----- */
 
 $('btnGen').onclick=()=>{
-  const fs=needFields();if(!fs)return;
-  const file=safeName($('fname').value),table=safeIdent($('tname').value),fmt=$('fmt').value,rows=makeRows(getN(),fs);
-  let ins=[];fs.forEach((f,k)=>{if(f.t!=='an')ins.push(k);});if(!ins.length)ins=[0];
-  const create='CREATE TABLE ['+table+'] ('+fs.map(f=>'['+f.col+'] '+sqlT(f)).join(', ')+')';
-  const L=["' Generated by Access DB Generator",'Option Explicit','Dim fso, folder, dbPath, cat, cat2, conn, prov, provs, ok',
-   'Set fso = CreateObject("Scripting.FileSystemObject")','folder = fso.GetParentFolderName(WScript.ScriptFullName)',
-   'dbPath = folder & "\\'+vq(file)+'.'+fmt+'"','If fso.FileExists(dbPath) Then fso.DeleteFile dbPath, True',
-   fmt==='mdb'?'provs = Array("Microsoft.Jet.OLEDB.4.0", "Microsoft.ACE.OLEDB.12.0", "Microsoft.ACE.OLEDB.16.0")':'provs = Array("Microsoft.ACE.OLEDB.16.0", "Microsoft.ACE.OLEDB.12.0")',
-   'ok = ""','On Error Resume Next','For Each prov In provs','  Err.Clear','  Set cat = CreateObject("ADOX.Catalog")',
-   '  cat.Create "Provider=" & prov & ";Data Source=" & dbPath'+(fmt==='mdb'?' & ";Jet OLEDB:Engine Type=5"':''),
-   '  If Err.Number = 0 Then ok = prov : Exit For','Next','On Error GoTo 0','If ok = "" Then',
-   '  Dim wow : wow = fso.GetSpecialFolder(0) & "\\SysWOW64\\wscript.exe"','  If WScript.Arguments.Count = 0 And fso.FileExists(wow) Then',
-   '    CreateObject("WScript.Shell").Run """" & wow & """ """ & WScript.ScriptFullName & """ x86", 1, True','    WScript.Quit 0','  End If',
-   '  MsgBox "Could not create the database." & vbCrLf & "Install Microsoft Access or the Access Database Engine (ACE OLEDB).", 16, "Access DB Generator"',
-   '  WScript.Quit 1','End If','Set conn = CreateObject("ADODB.Connection")','conn.Open "Provider=" & ok & ";Data Source=" & dbPath',
-   'conn.Execute "'+vq(create)+'"','conn.BeginTrans'];
-  const cl='['+ins.map(k=>fs[k].col).join('], [')+']';
-  rows.forEach(r=>L.push('conn.Execute "'+vq('INSERT INTO ['+table+'] ('+cl+') VALUES ('+ins.map(k=>enc(r[k],fs[k])).join(', ')+')')+'"'));
-  L.push('conn.CommitTrans');
+
+  const fs=needFields();
+
+  if(!fs)return;
+
+  const file=safeName($('fname').value);
+  const table=safeIdent($('tname').value);
+  const fmt=$('fmt').value;
+  const rows=makeRows(getN(),fs);
+
+  let ins=[];
+
+  fs.forEach((f,k)=>{
+    if(f.t!=='an')ins.push(k);
+  });
+
+  if(!ins.length)ins=[0];
+
+  const create=
+    'CREATE TABLE ['+
+    table+
+    '] ('+
+    fs.map(f=>
+      '['+
+      f.col+
+      '] '+
+      sqlT(f)
+    ).join(', ')+
+    ')';
+
+  const L=[
+    "' Generated by Access DB Generator",
+    'Option Explicit',
+    'Dim fso, folder, dbPath, cat, cat2, conn, prov, provs, ok',
+
+    'Set fso = CreateObject("Scripting.FileSystemObject")',
+
+    'folder = fso.GetParentFolderName(WScript.ScriptFullName)',
+
+    'dbPath = folder & "\\'+
+      vq(file)+
+      '.'+
+      fmt+
+      '"',
+
+    'If fso.FileExists(dbPath) Then fso.DeleteFile dbPath, True',
+
+    fmt==='mdb'
+      ?'provs = Array("Microsoft.Jet.OLEDB.4.0", "Microsoft.ACE.OLEDB.12.0", "Microsoft.ACE.OLEDB.16.0")'
+      :'provs = Array("Microsoft.ACE.OLEDB.16.0", "Microsoft.ACE.OLEDB.12.0")',
+
+    'ok = ""',
+    'On Error Resume Next',
+
+    'For Each prov In provs',
+
+    '  Err.Clear',
+
+    '  Set cat = CreateObject("ADOX.Catalog")',
+
+    '  cat.Create "Provider=" & prov & ";Data Source=" & dbPath'+
+      (
+        fmt==='mdb'
+          ?' & ";Jet OLEDB:Engine Type=5"'
+          :''
+      ),
+
+    '  If Err.Number = 0 Then ok = prov : Exit For',
+
+    'Next',
+
+    'On Error GoTo 0',
+
+    'If ok = "" Then',
+
+    '  Dim wow : wow = fso.GetSpecialFolder(0) & "\\SysWOW64\\wscript.exe"',
+
+    '  If WScript.Arguments.Count = 0 And fso.FileExists(wow) Then',
+
+    '    CreateObject("WScript.Shell").Run """" & wow & """ """ & WScript.ScriptFullName & """ x86", 1, True',
+
+    '    WScript.Quit 0',
+
+    '  End If',
+
+    '  MsgBox "Could not create the database." & vbCrLf & "Install Microsoft Access or the Access Database Engine (ACE OLEDB).", 16, "Access DB Generator"',
+
+    '  WScript.Quit 1',
+
+    'End If',
+
+    'Set conn = CreateObject("ADODB.Connection")',
+
+    'conn.Open "Provider=" & ok & ";Data Source=" & dbPath',
+
+    'conn.Execute "'+
+      vq(create)+
+      '"',
+
+    'conn.BeginTrans'
+  ];
+
+  const cl=
+    '['+
+    ins.map(k=>fs[k].col).join('], [')+
+    ']';
+
+  rows.forEach(r=>{
+
+    L.push(
+      'conn.Execute "'+
+      vq(
+        'INSERT INTO ['+
+        table+
+        '] ('+
+        cl+
+        ') VALUES ('+
+        ins.map(k=>
+          enc(r[k],fs[k])
+        ).join(', ')+
+        ')'
+      )+
+      '"'
+    );
+  });
+
+  L.push(
+    'conn.CommitTrans'
+  );
+
   const hls=fs.filter(f=>f.t==='hl');
-  if(hls.length){L.push('On Error Resume Next','Set cat2 = CreateObject("ADOX.Catalog")','Set cat2.ActiveConnection = conn');
-    hls.forEach(f=>L.push('cat2.Tables("'+vq(table)+'").Columns("'+vq(f.col)+'").Properties("Jet OLEDB:Hyperlink").Value = True'));L.push('On Error GoTo 0');}
-  L.push('conn.Close');
+
+  if(hls.length){
+
+    L.push(
+      'On Error Resume Next',
+      'Set cat2 = CreateObject("ADOX.Catalog")',
+      'Set cat2.ActiveConnection = conn'
+    );
+
+    hls.forEach(f=>
+      L.push(
+        'cat2.Tables("'+
+        vq(table)+
+        '").Columns("'+
+        vq(f.col)+
+        '").Properties("Jet OLEDB:Hyperlink").Value = True'
+      )
+    );
+
+    L.push(
+      'On Error GoTo 0'
+    );
+  }
+
+  L.push(
+    'conn.Close'
+  );
+
   const lks=fs.filter(f=>f.t==='lk');
-  lks.forEach(f=>{const v=lkVals(f);if(v.length)L.push('MakeLookup dbPath, "'+vq(table)+'", "'+vq(f.col)+'", "'+'""'+v.join('"";""')+'""'+'"');});
-  L.push('MsgBox "Created " & dbPath & vbCrLf & "Table: '+vq(table)+' ('+rows.length+' rows)", 64, "Access DB Generator"','WScript.Quit 0');
-  if(lks.length)L.push('Sub MakeLookup(dbPath, t, c, src)','  Dim dbe, db, fld, p','  On Error Resume Next','  Set dbe = CreateObject("DAO.DBEngine.120")',
-   '  If Err.Number <> 0 Then Err.Clear : Set dbe = CreateObject("DAO.DBEngine.36")','  Set db = dbe.OpenDatabase(dbPath)','  Set fld = db.TableDefs(t).Fields(c)',
-   '  Set p = fld.CreateProperty("DisplayControl", 3, 111) : fld.Properties.Append p','  Set p = fld.CreateProperty("RowSourceType", 10, "Value List") : fld.Properties.Append p',
-   '  Set p = fld.CreateProperty("RowSource", 10, src) : fld.Properties.Append p','  db.Close','End Sub');
-  download(file+'_builder.vbs',L.join('\r\n')+'\r\n','text/vbscript');
+
+  lks.forEach(f=>{
+
+    const v=lkVals(f);
+
+    if(v.length){
+
+      L.push(
+        'MakeLookup dbPath, "'+
+        vq(table)+
+        '", "'+
+        vq(f.col)+
+        '", "'+
+        '""'+
+        v.join('"";""')+
+        '""'+'"'
+      );
+    }
+  });
+
+  L.push(
+    'MsgBox "Created " & dbPath & vbCrLf & "Table: '+vq(table)+' ('+rows.length+' rows)", 64, "Access DB Generator"',
+    'WScript.Quit 0'
+  );
+
+  if(lks.length){
+
+    L.push(
+      'Sub MakeLookup(dbPath, t, c, src)',
+      '  Dim dbe, db, fld, p',
+      '  On Error Resume Next',
+      '  Set dbe = CreateObject("DAO.DBEngine.120")',
+      '  If Err.Number <> 0 Then Err.Clear : Set dbe = CreateObject("DAO.DBEngine.36")',
+      '  Set db = dbe.OpenDatabase(dbPath)',
+      '  Set fld = db.TableDefs(t).Fields(c)',
+      '  Set p = fld.CreateProperty("DisplayControl", 3, 111) : fld.Properties.Append p',
+      '  Set p = fld.CreateProperty("RowSourceType", 10, "Value List") : fld.Properties.Append p',
+      '  Set p = fld.CreateProperty("RowSource", 10, src) : fld.Properties.Append p',
+      '  db.Close',
+      'End Sub'
+    );
+  }
+
+  download(
+    file+'_builder.vbs',
+    L.join('\r\n')+'\r\n',
+    'text/vbscript'
+  );
 };
+
+
+/* ----- CSV ----- */
+
 $('btnCsv').onclick=()=>{
-  const fs=needFields();if(!fs)return;
-  const ce=v=>{v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
-  const out=[fs.map(f=>ce(f.col)).join(',')].concat(makeRows(getN(),fs).map(r=>r.map((v,k)=>ce(disp(v,fs[k]))).join(',')));
-  download(safeName($('fname').value)+'.csv','\ufeff'+out.join('\r\n'),'text/csv');
+
+  const fs=needFields();
+
+  if(!fs)return;
+
+  const ce=v=>{
+
+    v=String(v);
+
+    return /[",\n]/.test(v)
+      ?'"'+v.replace(/"/g,'""')+'"'
+      :v;
+  };
+
+  const out=[
+    fs.map(f=>ce(f.col)).join(',')
+  ].concat(
+    makeRows(getN(),fs).map(r=>
+      r.map((v,k)=>
+        ce(disp(v,fs[k]))
+      ).join(',')
+    )
+  );
+
+  download(
+    safeName($('fname').value)+'.csv',
+    '\ufeff'+out.join('\r\n'),
+    'text/csv'
+  );
 };
+
 $('btnPrev').onclick=preview;
-document.querySelectorAll('input,textarea').forEach(e=>e.addEventListener('change',preview));
-F=[{name:'FirstName',t:'st',gen:'first',p:'First Name'},{name:'LastName',t:'st',gen:'last',p:'Last Name'}];
-drawTabs();drawChips();render(false);
+
+
+/* ----- initial fields ----- */
+
+F=[
+  {
+    name:'FirstName',
+    t:'st',
+    gen:'first',
+    p:'First Name',
+    pid:'First Name',
+    rangeCustom:false
+  },
+  {
+    name:'LastName',
+    t:'st',
+    gen:'last',
+    p:'Last Name',
+    pid:'Last Name',
+    rangeCustom:false
+  }
+];
+
+drawTabs();
+drawChips();
+render(false);
+
 
 /* ===== interactivity & animation ===== */
-const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
 
-// scroll reveal
-const revs=[...document.querySelectorAll('.card,.foot')];
-revs.forEach(e=>e.classList.add('reveal'));
+const reduce=
+  window.matchMedia&&
+  matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+
+/* ----- scroll reveal ----- */
+
+const revs=[
+  ...document.querySelectorAll('.card,.foot')
+];
+
+revs.forEach(e=>
+  e.classList.add('reveal')
+);
+
 if('IntersectionObserver' in window){
-  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.08});
-  revs.forEach(e=>io.observe(e));
-}else revs.forEach(e=>e.classList.add('in'));
 
-// scroll progress bar
+  const io=new IntersectionObserver(
+    es=>es.forEach(e=>{
+
+      if(e.isIntersecting){
+
+        e.target.classList.add('in');
+
+        io.unobserve(e.target);
+      }
+    }),
+    {threshold:.08}
+  );
+
+  revs.forEach(e=>io.observe(e));
+
+}else{
+
+  revs.forEach(e=>
+    e.classList.add('in')
+  );
+}
+
+
+/* ----- scroll progress bar ----- */
+
 addEventListener('scroll',()=>{
-  const h=document.documentElement.scrollHeight-innerHeight;
-  $('bar').style.width=(h>0?scrollY/h*100:0)+'%';
+
+  const h=
+    document.documentElement.scrollHeight-
+    innerHeight;
+
+  $('bar').style.width=
+    (h>0?scrollY/h*100:0)+
+    '%';
+
 },{passive:true});
 
-// cursor-following glow (eased, stops when settled)
+
+/* ----- cursor-following glow ----- */
+
 let mx=62,my=18,gx=62,gy=18,raf=0;
+
 function glow(){
-  mx+=(gx-mx)*.08; my+=(gy-my)*.08;
-  document.body.style.setProperty('--mx',mx.toFixed(1)+'%');
-  document.body.style.setProperty('--my',my.toFixed(1)+'%');
-  raf=(Math.abs(gx-mx)>.05||Math.abs(gy-my)>.05)?requestAnimationFrame(glow):0;
-}
-if(!reduce) addEventListener('mousemove',e=>{gx=e.clientX/innerWidth*100;gy=e.clientY/innerHeight*100;if(!raf)raf=requestAnimationFrame(glow);});
 
-// toast (also replaces blocking alert())
-const tEl=$('toast'); let tt, hadErr=false;
+  mx+=(gx-mx)*.08;
+  my+=(gy-my)*.08;
+
+  document.body.style.setProperty(
+    '--mx',
+    mx.toFixed(1)+'%'
+  );
+
+  document.body.style.setProperty(
+    '--my',
+    my.toFixed(1)+'%'
+  );
+
+  raf=
+    (
+      Math.abs(gx-mx)>.05||
+      Math.abs(gy-my)>.05
+    )
+      ?requestAnimationFrame(glow)
+      :0;
+}
+
+if(!reduce){
+
+  addEventListener('mousemove',e=>{
+
+    gx=e.clientX/innerWidth*100;
+    gy=e.clientY/innerHeight*100;
+
+    if(!raf){
+      raf=requestAnimationFrame(glow);
+    }
+  });
+}
+
+
+/* ----- toast ----- */
+
+const tEl=$('toast');
+let tt;
+let hadErr=false;
+
 function toast(msg,err,link){
-  tEl.textContent=msg; tEl.className='show'+(err?' err':'');
-  if(link){const a=document.createElement('a');a.href='#fix';a.className='fixlink';a.textContent='Blocked by Windows? See the fix \u2192';a.onclick=()=>{setTimeout(hlFix,350);};tEl.appendChild(a);}
-  clearTimeout(tt); tt=setTimeout(()=>{tEl.className='';},link?8000:3800);
-}
-window.alert=m=>{hadErr=true;toast(m,true);};
 
-// count-up numbers
+  tEl.textContent=msg;
+
+  tEl.className=
+    'show'+
+    (err?' err':'');
+
+  if(link){
+
+    const a=document.createElement('a');
+
+    a.href='#fix';
+    a.className='fixlink';
+
+    a.textContent=
+      'Blocked by Windows? See the fix \u2192';
+
+    a.onclick=()=>{
+      setTimeout(hlFix,350);
+    };
+
+    tEl.appendChild(a);
+  }
+
+  clearTimeout(tt);
+
+  tt=setTimeout(
+    ()=>{
+      tEl.className='';
+    },
+    link?8000:3800
+  );
+}
+
+window.alert=m=>{
+  hadErr=true;
+  toast(m,true);
+};
+
+
+/* ----- count-up numbers ----- */
+
 function countTo(el,to,fmt){
-  const from=+el.dataset.v||0; el.dataset.v=to;
-  if(reduce){el.textContent=fmt?fmt(to):to;return;}
-  const t0=performance.now(),d=550;
+
+  const from=+el.dataset.v||0;
+
+  el.dataset.v=to;
+
+  if(reduce){
+
+    el.textContent=
+      fmt?fmt(to):to;
+
+    return;
+  }
+
+  const t0=performance.now();
+  const d=550;
+
   (function step(t){
-    const p=Math.min(1,(t-t0)/d),e=1-Math.pow(1-p,3),v=Math.round(from+(to-from)*e);
-    el.textContent=fmt?fmt(v):v;
-    if(p<1)requestAnimationFrame(step);
+
+    const p=
+      Math.min(
+        1,
+        (t-t0)/d
+      );
+
+    const e=
+      1-Math.pow(
+        1-p,
+        3
+      );
+
+    const v=
+      Math.round(
+        from+
+        (to-from)*e
+      );
+
+    el.textContent=
+      fmt?fmt(v):v;
+
+    if(p<1){
+      requestAnimationFrame(step);
+    }
+
   })(t0);
 }
-const fmtSize=v=>v>=1024?(v/1024).toFixed(1)+' MB':v+' KB';
 
-// runs after every preview refresh
+const fmtSize=v=>
+  v>=1024
+    ?(v/1024).toFixed(1)+' MB'
+    :v+' KB';
+
+
+/* ----- runs after every preview refresh ----- */
+
 function afterPreview(fs){
-  document.querySelectorAll('#preview tr').forEach((tr,i)=>{if(i){tr.className='r';tr.style.animationDelay=(i*50)+'ms';}});
-  const n=getN(),smp=makeRows(8,fs);
-  const avg=fs.length?smp.reduce((a,r)=>a+r.reduce((b,v)=>b+(v==null?1:typeof v==='string'?v.length+1:8),0),0)/8+8:0;
-  countTo($('sRows'),n);
-  countTo($('sCols'),fs.length);
-  countTo($('sSize'),Math.round(120+n*avg/1024),fmtSize);
-  const t=safeIdent($('tname').value);
-  const sql=fs.length?'CREATE TABLE ['+t+'] (\n'+fs.map(f=>'  ['+f.col+'] '+sqlT(f)).join(',\n')+'\n);':'-- add at least one field';
-  const el=$('sql'); el.textContent=sql; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+
+  document
+    .querySelectorAll('#preview tr')
+    .forEach((tr,i)=>{
+
+      if(i){
+
+        tr.className='r';
+
+        tr.style.animationDelay=
+          (i*50)+'ms';
+      }
+    });
+
+  const n=getN();
+
+  const smp=
+    makeRows(8,fs);
+
+  const avg=
+    fs.length
+      ?smp.reduce(
+        (a,r)=>
+          a+
+          r.reduce(
+            (b,v)=>
+              b+
+              (
+                v==null
+                  ?1
+                  :typeof v==='string'
+                    ?v.length+1
+                    :8
+              ),
+            0
+          ),
+        0
+      )/8+8
+      :0;
+
+  countTo(
+    $('sRows'),
+    n
+  );
+
+  countTo(
+    $('sCols'),
+    fs.length
+  );
+
+  countTo(
+    $('sSize'),
+    Math.round(
+      120+
+      n*avg/1024
+    ),
+    fmtSize
+  );
+
+  const t=
+    safeIdent(
+      $('tname').value
+    );
+
+  const sql=
+    fs.length
+      ?'CREATE TABLE ['+
+        t+
+        '] (\n'+
+        fs.map(f=>
+          '  ['+
+          f.col+
+          '] '+
+          sqlT(f)
+        ).join(',\n')+
+        '\n);'
+      :'-- add at least one field';
+
+  const el=$('sql');
+
+  el.textContent=sql;
+
+  el.classList.remove('flash');
+
+  void el.offsetWidth;
+
+  el.classList.add('flash');
 }
 
-// busy state + toast on downloads
+
+/* ----- busy state + toast on downloads ----- */
+
 function run(btn,label,fn,okMsg){
+
   if(btn.classList.contains('busy'))return;
-  const orig=btn.textContent; hadErr=false;
-  btn.classList.add('busy'); btn.textContent=label;
+
+  const orig=btn.textContent;
+
+  hadErr=false;
+
+  btn.classList.add('busy');
+  btn.textContent=label;
+
   setTimeout(()=>{
-    try{fn();}catch(e){hadErr=true;toast('Something went wrong: '+e.message,true);}
-    btn.classList.remove('busy'); btn.textContent=orig;
-    if(!hadErr)toast(okMsg,false,btn.id==='btnGen');
+
+    try{
+
+      fn();
+
+    }catch(e){
+
+      hadErr=true;
+
+      toast(
+        'Something went wrong: '+
+        e.message,
+        true
+      );
+    }
+
+    btn.classList.remove('busy');
+
+    btn.textContent=orig;
+
+    if(!hadErr){
+
+      toast(
+        okMsg,
+        false,
+        btn.id==='btnGen'
+      );
+    }
+
   },reduce?0:450);
 }
-const ogGen=$('btnGen').onclick, ogCsv=$('btnCsv').onclick;
-$('btnGen').onclick=()=>run($('btnGen'),'Generating',ogGen,'Builder downloaded. Save it in a folder and double-click it.');
-$('btnCsv').onclick=()=>run($('btnCsv'),'Preparing',ogCsv,'CSV downloaded.');
 
-// live preview while typing (debounced) + Ctrl+Enter to generate
+const ogGen=$('btnGen').onclick;
+const ogCsv=$('btnCsv').onclick;
+
+$('btnGen').onclick=()=>
+  run(
+    $('btnGen'),
+    'Generating',
+    ogGen,
+    'Builder downloaded. Save it in a folder and double-click it.'
+  );
+
+$('btnCsv').onclick=()=>
+  run(
+    $('btnCsv'),
+    'Preparing',
+    ogCsv,
+    'CSV downloaded.'
+  );
+
+
+/* ----- live preview while typing + Ctrl+Enter ----- */
+
 let deb;
-document.querySelectorAll('input[type=text],input[type=number],textarea').forEach(e=>e.addEventListener('input',()=>{clearTimeout(deb);deb=setTimeout(preview,350);}));
-addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();$('btnGen').click();}});
 
-// unblock-fix section: tabs, live file name, copy button, highlight
-function hlFix(){const f=$('fix');f.classList.remove('hl');void f.offsetWidth;f.classList.add('hl');}
-document.querySelectorAll('a[href="#fix"]').forEach(a=>a.addEventListener('click',()=>setTimeout(hlFix,350)));
-document.querySelectorAll('.fixtabs button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('.fixtabs button').forEach(x=>x.classList.toggle('on',x===b));
-  document.querySelectorAll('.fixpanel').forEach(p=>p.classList.toggle('on',p.id===b.dataset.t));
+document
+  .querySelectorAll(
+    'input[type=text],input[type=number],textarea'
+  )
+  .forEach(e=>
+    e.addEventListener(
+      'input',
+      ()=>{
+        clearTimeout(deb);
+        deb=setTimeout(
+          preview,
+          350
+        );
+      }
+    )
+  );
+
+addEventListener('keydown',e=>{
+
+  if(
+    (e.ctrlKey||e.metaKey)&&
+    e.key==='Enter'
+  ){
+
+    e.preventDefault();
+
+    $('btnGen').click();
+  }
 });
-function updateFix(){
-  const f=safeName($('fname').value)+'_builder.vbs';
-  document.querySelectorAll('.fn').forEach(e=>{e.textContent=f;});
-  $('cmdText').textContent='Unblock-File "$env:USERPROFILE\\Downloads\\'+f+'"';
+
+
+/* ----- unblock-fix section ----- */
+
+function hlFix(){
+
+  const f=$('fix');
+
+  f.classList.remove('hl');
+
+  void f.offsetWidth;
+
+  f.classList.add('hl');
 }
-$('fname').addEventListener('input',updateFix); updateFix();
+
+document
+  .querySelectorAll('a[href="#fix"]')
+  .forEach(a=>
+    a.addEventListener(
+      'click',
+      ()=>setTimeout(
+        hlFix,
+        350
+      )
+    )
+  );
+
+document
+  .querySelectorAll('.fixtabs button')
+  .forEach(b=>
+
+    b.onclick=()=>{
+
+      document
+        .querySelectorAll('.fixtabs button')
+        .forEach(x=>
+          x.classList.toggle(
+            'on',
+            x===b
+          )
+        );
+
+      document
+        .querySelectorAll('.fixpanel')
+        .forEach(p=>
+          p.classList.toggle(
+            'on',
+            p.id===b.dataset.t
+          )
+        );
+    }
+  );
+
+
+/* ----- live file name ----- */
+
+function updateFix(){
+
+  const f=
+    safeName(
+      $('fname').value
+    )+
+    '_builder.vbs';
+
+  document
+    .querySelectorAll('.fn')
+    .forEach(e=>{
+      e.textContent=f;
+    });
+
+  $('cmdText').textContent=
+    'Unblock-File "$env:USERPROFILE\\Downloads\\'+
+    f+
+    '"';
+}
+
+$('fname').addEventListener(
+  'input',
+  updateFix
+);
+
+updateFix();
+
+
+/* ----- copy PowerShell command ----- */
+
 $('copyCmd').onclick=()=>{
+
   const t=$('cmdText').textContent;
-  const fallback=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();
-    try{document.execCommand('copy');toast('Command copied.');}catch(e){toast('Select the command and press Ctrl+C.',true);}ta.remove();};
-  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(()=>toast('Command copied.'),fallback);else fallback();
+
+  const fallback=()=>{
+
+    const ta=document.createElement('textarea');
+
+    ta.value=t;
+
+    document.body.appendChild(ta);
+
+    ta.select();
+
+    try{
+
+      document.execCommand('copy');
+
+      toast('Command copied.');
+
+    }catch(e){
+
+      toast(
+        'Select the command and press Ctrl+C.',
+        true
+      );
+    }
+
+    ta.remove();
+  };
+
+  if(
+    navigator.clipboard&&
+    navigator.clipboard.writeText
+  ){
+
+    navigator.clipboard
+      .writeText(t)
+      .then(
+        ()=>toast('Command copied.'),
+        fallback
+      );
+
+  }else{
+
+    fallback();
+  }
 };
+
 
 preview();
 </script>
