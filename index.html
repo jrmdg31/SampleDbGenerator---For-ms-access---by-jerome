@@ -110,6 +110,31 @@
   #copyCmd:after{content:""}
   #toast.show{pointer-events:auto}
   #toast .fixlink{display:block;margin-top:6px;font-weight:600}
+  .ctabs{display:flex;gap:26px;flex-wrap:wrap;border-bottom:1px solid var(--bd);margin:18px 0 8px}
+  .ctabs button{border:0;padding:0 0 12px;color:var(--mut);position:relative;background:none}
+  .ctabs button:after{content:"";position:absolute;left:0;bottom:-1px;height:1px;width:0;background:var(--ac);transition:width .3s}
+  .ctabs button.on{color:var(--tx)}
+  .ctabs button.on:after{width:100%}
+  .ctabs button:hover{background:none;color:var(--tx)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+  .chip{cursor:pointer;user-select:none;border:1px solid var(--bd);border-radius:999px;padding:6px 14px;font-size:13px;color:var(--mut);transition:.2s;outline:none}
+  .chip:hover,.chip:focus{border-color:var(--ac);color:var(--tx)}
+  .chip.on{border-color:var(--ac);color:var(--ac)}
+  .chip.on:before{content:"\2713  "}
+  #flist{display:flex;flex-direction:column;gap:8px;position:relative;margin-top:14px}
+  .frow2{display:grid;grid-template-columns:auto 26px 1.4fr 1fr 1.2fr auto;gap:14px;align-items:center;padding:10px 14px;border:1px solid var(--bd);background:#181512;border-radius:8px;transition:transform .25s cubic-bezier(.2,.7,.2,1),box-shadow .25s,border-color .25s,background .25s,opacity .25s}
+  .frow2.new{animation:up .4s both}
+  .frow2.out{opacity:0;transform:translateX(26px)}
+  .frow2.drag{position:relative;z-index:3;transition:box-shadow .25s,border-color .25s;border-color:var(--ac);background:#211b15;box-shadow:0 16px 36px rgba(0,0,0,.6);cursor:grabbing}
+  .grip{width:18px;height:27px;cursor:grab;touch-action:none;border-radius:4px;outline:none;opacity:.7;transition:.2s;background:radial-gradient(circle,#8f877c 1.5px,transparent 1.9px) 0 0/9px 9px}
+  .grip:hover,.grip:focus,.drag .grip{opacity:1;background-image:radial-gradient(circle,#c98a4b 1.5px,transparent 1.9px)}
+  .fno{font-size:11px;letter-spacing:.12em;color:var(--ac)}
+  .frow2 input,.frow2 select{padding:6px 0;font-size:14px}
+  .frow2 select:disabled{opacity:.4}
+  .frow2 .x{cursor:pointer;color:var(--mut);font-size:20px;line-height:1;padding:2px 6px;transition:.2s}
+  .frow2 .x:hover{color:#d9534f}
+  #addBtn:after{content:" +"}
+  @media (max-width:720px){.frow2{grid-template-columns:auto 1fr auto}.frow2 .fno{display:none}.frow2 .ty,.frow2 .gn{grid-column:1/-1}}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
 </style>
 </head>
@@ -139,9 +164,9 @@
   </div>
 
   <div class="card">
-    <h2>Fields &amp; column names</h2>
-    <div class="grid" style="margin-bottom:12px">
-      <div><label>Naming style (fills in the names below)</label>
+    <h2>Fields &amp; data types</h2>
+    <div class="grid" style="margin-bottom:8px">
+      <div><label>Naming style (applies to all names)</label>
         <select id="nstyle">
           <option value="pascal">FirstName (no spaces)</option>
           <option value="snake">first_name (lowercase, underscores)</option>
@@ -149,21 +174,20 @@
           <option value="upper">FIRST_NAME (uppercase)</option>
         </select></div>
     </div>
-    <p class="note" style="margin-top:0">Tick the fields you want, and edit any name to whatever you like.</p>
-    <div class="fgrid" id="fields"></div>
+    <div class="ctabs" id="ctabs"></div>
+    <div class="chips" id="chips"></div>
+    <p class="note" style="margin-top:0">Tap a preset to add or remove it. Drag the dotted handle to reorder, or focus it and use the arrow keys.</p>
+    <div id="flist"></div>
+    <div class="row" style="margin-top:16px"><button class="alt" id="addBtn">Add custom field</button></div>
   </div>
 
   <div class="card">
     <h2>Data options</h2>
     <div class="grid">
-      <div><label>Age min</label><input type="number" id="amin" value="18" min="0" max="120"></div>
-      <div><label>Age max</label><input type="number" id="amax" value="65" min="0" max="120"></div>
-      <div><label>Middle name: % of rows filled</label><input type="number" id="mpct" value="100" min="0" max="100"></div>
-    </div>
-    <div class="grid" style="margin-top:12px">
+      <div><label>Empty cells (%)</label><input type="number" id="blank" value="0" min="0" max="90"></div>
       <div><label>Genders (comma separated)</label><input type="text" id="genders" value="Male, Female"></div>
-      <div><label>Locations (comma separated)</label><textarea id="locs">Manila, Quezon City, Cebu City, Davao City, San Fernando, Angeles, Baguio, Iloilo City</textarea></div>
-      <div><label>Roles (comma separated)</label><textarea id="roles">Admin, Manager, Staff, Supervisor, Clerk, Developer, Analyst</textarea></div>
+      <div><label>Job titles</label><textarea id="roles">Admin, Manager, Staff, Supervisor, Clerk, Developer, Analyst</textarea></div>
+      <div><label>Locations / cities</label><textarea id="locs">Manila, Quezon City, Cebu City, Davao City, San Fernando, Angeles, Baguio, Iloilo City</textarea></div>
     </div>
   </div>
 
@@ -218,172 +242,225 @@
 </div>
 
 <script>
-const FIELDS = [
-  {key:'id',label:'Primary key (ID)',col:'ID',type:'COUNTER PRIMARY KEY',on:true},
-  {key:'first',label:'First name',col:'FirstName',type:'TEXT(50)',on:true},
-  {key:'middle',label:'Middle name',col:'MiddleName',type:'TEXT(50)',on:true},
-  {key:'last',label:'Last name',col:'LastName',type:'TEXT(50)',on:true},
-  {key:'age',label:'Age',col:'Age',type:'SHORT',on:true},
-  {key:'gender',label:'Gender',col:'Gender',type:'TEXT(20)',on:true},
-  {key:'loc',label:'Location',col:'Location',type:'TEXT(100)',on:true},
-  {key:'role',label:'Role',col:'Role',type:'TEXT(50)',on:true},
-];
-const FIRST_M=['James','John','Mark','Paul','Daniel','Michael','Joseph','Carlo','Miguel','Rafael','Angelo','Jose','Luis','Gabriel','Nathan'];
-const FIRST_F=['Maria','Anna','Grace','Sofia','Isabel','Angela','Patricia','Kristine','Jasmine','Clarisse','Nicole','Rose','Camille','Lea','Bianca'];
+const $=id=>document.getElementById(id);
+const P=a=>a[Math.floor(Math.random()*a.length)],I=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const Z=(n,l)=>('0000000000'+n).slice(-(l||2));
+const digits=n=>{let t='';while(n--)t+=I(0,9);return t;};
+const pat=t=>t.replace(/#/g,()=>I(0,9));
+const dO=ms=>{const d=new Date(ms);return d.getFullYear()+'-'+Z(d.getMonth()+1)+'-'+Z(d.getDate());};
+const dT=ms=>{const d=new Date(ms);return dO(ms)+' '+Z(d.getHours())+':'+Z(d.getMinutes())+':'+Z(d.getSeconds());};
+const rms=(a,b)=>new Date(a,0,1).getTime()+Math.random()*(new Date(b+1,0,1)-new Date(a,0,1));
+const list=t=>t.split(',').map(x=>x.trim()).filter(Boolean);
+const clean=t=>String(t).replace(/[^\x20-\x7E]/g,'');
+const safeName=t=>(clean(t).replace(/[\\/:*?"<>|]/g,'').trim()||'Database');
+const safeIdent=t=>(clean(t).replace(/[^A-Za-z0-9_ ]/g,'').trim()||'People');
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const FM=['James','John','Mark','Paul','Daniel','Michael','Joseph','Carlo','Miguel','Rafael','Angelo','Jose','Luis','Gabriel','Nathan'];
+const FF=['Maria','Anna','Grace','Sofia','Isabel','Angela','Patricia','Kristine','Jasmine','Clarisse','Nicole','Rose','Camille','Lea','Bianca'];
 const LAST=['Santos','Reyes','Cruz','Bautista','Garcia','Mendoza','Torres','Flores','Ramos','Aquino','Castillo','Villanueva','Navarro','Dela Cruz','Domingo','Pascual','Salazar','Rivera','Lopez','Gonzales'];
-
-const $ = id => document.getElementById(id);
-const box = $('fields');
-function styled(key,style){
-  const f=FIELDS.find(x=>x.key===key);
-  const w=f.col.replace(/([a-z])([A-Z])/g,'$1 $2').split(' ');
-  return style==='snake'?w.join('_').toLowerCase()
-       : style==='spaced'?w.join(' ')
-       : style==='upper'?w.join('_').toUpperCase()
-       : w.join('');
-}
-FIELDS.forEach(f=>{
-  const l=document.createElement('label');
-  l.className='frow';
-  l.innerHTML=`<input type="checkbox" data-k="${f.key}" ${f.on?'checked':''}><span>${f.label}</span><input type="text" data-n="${f.key}" value="${f.col}">`;
-  box.appendChild(l);
-});
-$('nstyle').onchange=()=>{
-  box.querySelectorAll('input[data-n]').forEach(i=>{ i.value=styled(i.dataset.n,$('nstyle').value); });
-  preview();
+const WORDS=['alpha','bravo','coffee','delta','echo','matrix','nova','orbit','pixel','quartz'];
+const SENT=['Follow up with the client next week.','Needs review before the end of the month.','Everything looks good so far.','Waiting on approval from the manager.'];
+const STREET=['Rizal','Mabini','Bonifacio','Luna','Del Pilar','Quezon','Aguinaldo'];
+const EM=c=>(c.first+'.'+c.last).toLowerCase().replace(/[^a-z.]/g,'');
+const ADDR=()=>I(1,999)+' '+P(STREET)+' '+P(['St.','Ave.','Blvd.','Road']);
+// key: [label, natural type, generator(row, index, options)]
+const GEN={
+ seq:['Sequence 1, 2, 3...','nw',(c,i)=>i],
+ first:['First name','st',c=>c.first],last:['Last name','st',c=>c.last],
+ mid:['Middle name','st',()=>P(LAST)],init:['Middle initial','st',()=>P('ABCDEFGHJKLMNPRSTW'.split(''))],
+ prefix:['Prefix','st',()=>P(['Mr.','Ms.','Mrs.','Dr.','Hon.','Engr.'])],
+ suffix:['Suffix','st',()=>Math.random()<.8?'':P(['Jr.','Sr.','III','PhD','Esq.'])],
+ nick:['Nickname','st',c=>c.first.slice(0,4)],
+ dob:['Date of birth','dt',()=>dO(rms(1960,2006))],
+ gender:['Gender','st',(c,i,O)=>P(O.g)],pron:['Pronouns','st',()=>P(['he/him','she/her','they/them'])],
+ natid:['National ID (masked)','st',()=>'***-**-'+digits(4)],lic:['License number','st',()=>'N'+pat('##-##-######')],
+ title:['Job title','st',(c,i,O)=>P(O.r)],dept:['Department','st',()=>P(['HR','Finance','IT','Sales','Marketing','Operations','Legal'])],
+ div:['Division / branch','st',()=>P(['North','South','East','West','Central','Head Office'])],
+ empid:['Employee ID','st',(c,i)=>'EMP-'+Z(i,5)],mgr:['Manager ID','nw',(c,i,O)=>I(1,Math.max(1,Math.min(O.n,20)))],
+ hire:['Hire date','dt',()=>dO(rms(2008,2025))],term:['Termination date','dt',()=>Math.random()<.85?null:dO(rms(2020,2026))],
+ estatus:['Employment status','st',()=>P(['Full-Time','Part-Time','Contractor','Intern'])],
+ salary:['Salary / wage','cu',()=>I(200,1500)*100],payfreq:['Pay frequency','st',()=>P(['Hourly','Weekly','Bi-weekly','Monthly'])],
+ desk:['Work location / desk','st',()=>'Desk '+P('ABCDEF'.split(''))+'-'+I(1,40)],
+ email:['Email','st',c=>EM(c)+'@example.com'],email2:['Backup email','st',c=>(c.first+I(1,99)).toLowerCase().replace(/[^a-z0-9]/g,'')+'@example.org'],
+ phone:['Phone (555)','st',()=>pat('(555) ###-####')],ext:['Extension','st',()=>digits(4)],mobile:['Mobile number','st',()=>pat('09##-###-####')],
+ cmethod:['Preferred contact','st',()=>P(['Email','Phone','SMS','Mail'])],
+ addr1:['Street address','st',ADDR],addr2:['Address line 2','st',()=>Math.random()<.5?'':P(['Unit ','Suite ','Floor '])+I(1,30)],
+ city:['City / location','st',(c,i,O)=>P(O.l)],state:['State / region','st',()=>P(['Metro Manila','Central Luzon','Calabarzon','Central Visayas','Davao Region','Ilocos Region'])],
+ zip:['Postal code','st',()=>digits(4)],country:['Country','st',()=>P(['Philippines','United States','Japan','Singapore','Canada','Australia'])],
+ lat:['Latitude','nd',()=>+(5+Math.random()*15).toFixed(6)],lon:['Longitude','nd',()=>+(117+Math.random()*9).toFixed(6)],
+ acct:['Account number','st',()=>pat('ACC-########')],credit:['Credit limit','cu',()=>I(2,100)*500],
+ terms:['Payment terms','st',()=>P(['Net 30','Net 60','Due on Receipt'])],taxex:['Yes / No (mostly No)','yn',()=>Math.random()<.2],
+ taxid:['Tax ID / VAT','st',()=>pat('###-###-###-000')],guid:['GUID-style ID','st',()=>'{'+pat('########-####-####-####-############')+'}'],
+ created:['Created date/time','dt',c=>{c.cr=rms(2023,2026);return dT(c.cr);}],
+ modified:['Modified date/time','dt',c=>dT(Math.min(Date.now(),(c.cr||rms(2023,2025))+I(0,90)*864e5))],
+ user:['Username','st',()=>P(['admin','jdavid','mreyes','asantos','system'])],active:['Yes / No (mostly Yes)','yn',()=>Math.random()<.9],
+ word:['Random word','st',()=>P(WORDS)],sentence:['Sentence','lt',()=>P(SENT)],int:['Whole number 1-1000','nw',()=>I(1,1000)],
+ dec:['Decimal 0-1000','nd',()=>+(Math.random()*1000).toFixed(2)],money:['Money 10-5000','cu',()=>+(10+Math.random()*4990).toFixed(2)],
+ date:['Date 2015-2026','dt',()=>dO(rms(2015,2026))],bool:['Yes / No (50/50)','yn',()=>Math.random()<.5],
+ url:['Website link','hl',()=>'https://'+P(WORDS)+'.example.com'],status:['Status list','lk',()=>P(['Active','Pending','Inactive','Archived'])],
+ blank:['Leave empty','st',()=>null]
 };
+const TY=[['st','Short Text','TEXT(255)'],['lt','Long Text','MEMO'],['nw','Number (whole)','LONG'],['nd','Number (decimal)','DOUBLE'],['dt','Date/Time','DATETIME'],['cu','Currency','CURRENCY'],['an','AutoNumber','COUNTER'],['yn','Yes/No','YESNO'],['ole','OLE Object','LONGBINARY'],['hl','Hyperlink','MEMO'],['lk','Lookup Wizard','TEXT(255)']];
+const OK={st:'st lt lk hl',lt:'lt st',nw:'nw nd cu',nd:'nd cu',cu:'cu nd',dt:'dt st',yn:'yn nw',hl:'hl st lt',lk:'lk st'};
+const DEF={st:'word',lt:'sentence',nw:'int',nd:'dec',dt:'date',cu:'money',an:'seq',yn:'bool',ole:'blank',hl:'url',lk:'status'};
+const sqlT=f=>f.t==='an'?'COUNTER PRIMARY KEY':TY.filter(t=>t[0]===f.t)[0][2];
+const CATS=[
+ ['\uD83D\uDC64 Personal','Prefix|Prefix|prefix;First Name|FirstName|first;Middle Name|MiddleName|mid;Middle Initial|MiddleInitial|init;Last Name|LastName|last;Suffix|Suffix|suffix;Nickname|Nickname|nick;Date of Birth|DateOfBirth|dob;Gender|Gender|gender;Pronouns|Pronouns|pron;National ID|NationalID|natid;License Number|LicenseNumber|lic'],
+ ['\uD83D\uDCBC Employment','Job Title|JobTitle|title;Department|Department|dept;Division / Branch|Division|div;Employee ID|EmployeeID|empid;Manager ID|ManagerID|mgr;Hire Date|HireDate|hire;Termination Date|TerminationDate|term;Employment Status|EmploymentStatus|estatus;Salary|Salary|salary;Pay Frequency|PayFrequency|payfreq;Work Location|WorkLocation|desk'],
+ ['\uD83D\uDCDE Contact','Email|Email|email;Secondary Email|SecondaryEmail|email2;Work Phone|WorkPhone|phone;Extension|Extension|ext;Mobile|Mobile|mobile;Home Phone|HomePhone|phone;Fax|Fax|phone;Preferred Contact|PreferredContact|cmethod'],
+ ['\uD83D\uDCCD Location','Address Line 1|Address1|addr1;Address Line 2|Address2|addr2;City|City|city;State / Region|State|state;Postal Code|PostalCode|zip;Country|Country|country;Latitude|Latitude|lat;Longitude|Longitude|lon'],
+ ['\uD83D\uDCB3 Financial','Account Number|AccountNumber|acct;Credit Limit|CreditLimit|credit;Payment Terms|PaymentTerms|terms;Billing Address|BillingAddress|addr1;Shipping Address|ShippingAddress|addr1;Tax Exempt|TaxExempt|taxex;Tax ID / VAT|TaxID|taxid'],
+ ['\uD83D\uDEE1 System','Record ID|RecordID|seq|an;Created|CreatedAt|created;Created By|CreatedBy|user;Last Modified|ModifiedAt|modified;Modified By|ModifiedBy|user;Is Active|IsActive|active;GUID|RecordGUID|guid']
+].map(c=>[c[0],c[1].split(';').map(x=>{const a=x.split('|');return{p:a[0],name:a[1],gen:a[2],t:a[3]||GEN[a[2]][1]};})]);
 
-const pick = a => a[Math.floor(Math.random()*a.length)];
-const list = s => s.split(',').map(x=>x.trim()).filter(Boolean);
-const int = (a,b)=>a+Math.floor(Math.random()*(b-a+1));
-const clean = s => String(s).replace(/[^\x20-\x7E]/g,'');
-const safeName = s => (clean(s).replace(/[\\/:*?"<>|]/g,'').trim()||'Database');
-const safeIdent = s => (clean(s).replace(/[^A-Za-z0-9_ ]/g,'').trim()||'People');
+// ----- naming -----
+const words=n=>n.replace(/([a-z0-9])([A-Z])/g,'$1 $2').replace(/[_\-]+/g,' ').trim().split(/\s+/);
+function styleName(n,st){const w=words(n),c=x=>x.charAt(0).toUpperCase()+x.slice(1);
+  return st==='snake'?w.join('_').toLowerCase():st==='upper'?w.join('_').toUpperCase():st==='spaced'?w.map(c).join(' '):w.map(c).join('');}
+const colName=n=>clean(n).replace(/[\[\]\.!`"']/g,'').trim();
 
-function colName(k){
-  const el=box.querySelector(`input[data-n="${k}"]`);
-  const clean2=clean(el.value).replace(/[\[\]\.!`"']/g,'').trim();
-  return clean2 || FIELDS.find(f=>f.key===k).col;
+// ----- field state -----
+let F=[],cat=0,pv;
+const dp=()=>{clearTimeout(pv);pv=setTimeout(preview,350);};
+const selOpts=(arr,cur)=>arr.map(a=>'<option value="'+a[0]+'"'+(a[0]===cur?' selected':'')+'>'+esc(a[1])+'</option>').join('');
+const GOPTS=Object.keys(GEN).map(k=>[k,GEN[k][0]]);
+function render(anim){
+  const L=$('flist'); L.innerHTML='';
+  F.forEach((f,i)=>{
+    const r=document.createElement('div'); r.className='frow2'+(f.isNew&&anim?' new':''); f.isNew=false;
+    r.innerHTML='<div class="grip" tabindex="0" role="button" aria-label="Drag to reorder"></div><span class="fno">'+Z(i+1)+'</span><input type="text" class="nm" placeholder="Field name"><select class="ty">'+selOpts(TY,f.t)+'</select><select class="gn">'+selOpts(GOPTS,f.gen)+'</select><span class="x" title="Remove field">&times;</span>';
+    const nm=r.querySelector('.nm'),ty=r.querySelector('.ty'),gn=r.querySelector('.gn');
+    nm.value=f.name; gn.disabled=(f.t==='an'||f.t==='ole');
+    nm.oninput=()=>{f.name=nm.value;dp();};
+    ty.onchange=()=>{f.t=ty.value;if(f.t!=='an'&&f.t!=='ole'&&!(OK[GEN[f.gen][1]]||'').split(' ').includes(f.t))f.gen=DEF[f.t];if(f.t==='an')f.gen='seq';render(false);preview();};
+    gn.onchange=()=>{f.gen=gn.value;const nt=GEN[f.gen][1];if(!(OK[nt]||'').split(' ').includes(f.t))f.t=nt;render(false);preview();};
+    r.querySelector('.x').onclick=()=>{r.classList.add('out');setTimeout(()=>{F.splice(F.indexOf(f),1);render(false);drawChips();preview();},230);};
+    L.appendChild(r);
+  });
 }
-function active(){
-  const on = [...box.querySelectorAll('input[data-k]:checked')].map(i=>i.dataset.k);
-  return FIELDS.filter(f=>on.includes(f.key)).map(f=>({...f,col:colName(f.key)}));
+function addF(o){o.isNew=true;F.push(o);render(true);}
+function drawTabs(){$('ctabs').innerHTML=CATS.map((c,i)=>'<button data-i="'+i+'"'+(i===cat?' class="on"':'')+'>'+c[0]+'</button>').join('');}
+function drawChips(){$('chips').innerHTML=CATS[cat][1].map((p,i)=>'<span class="chip'+(F.some(f=>f.p===p.p)?' on':'')+'" tabindex="0" data-i="'+i+'">'+esc(p.p)+'</span>').join('');}
+$('ctabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;cat=+b.dataset.i;drawTabs();drawChips();};
+const chipToggle=e=>{const c=e.target.closest('.chip');if(!c)return;const p=CATS[cat][1][+c.dataset.i],k=F.findIndex(f=>f.p===p.p);
+  if(k>-1){F.splice(k,1);render(false);}else addF({name:styleName(p.name,$('nstyle').value),t:p.t,gen:p.gen,p:p.p});
+  drawChips();preview();};
+$('chips').onclick=chipToggle;
+$('chips').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();chipToggle(e);}};
+$('addBtn').onclick=()=>{let n=1;const names=F.map(f=>f.name);while(names.includes(styleName('NewField'+n,$('nstyle').value)))n++;
+  addF({name:styleName('NewField'+n,$('nstyle').value),t:'st',gen:'word'});
+  const rows=$('flist').children;rows[rows.length-1].querySelector('.nm').focus();preview();};
+$('nstyle').onchange=()=>{F.forEach(f=>{f.name=styleName(f.name,$('nstyle').value);});render(false);preview();};
+
+// ----- drag to reorder (smooth, pointer-based) -----
+let dg=null;
+$('flist').addEventListener('pointerdown',e=>{
+  const g=e.target.closest('.grip');if(!g)return;e.preventDefault();
+  const el=g.parentNode,rows=[].slice.call($('flist').children),from=rows.indexOf(el);
+  dg={el:el,rows:rows,from:from,to:from,step:el.offsetHeight+8,h:el.offsetHeight,y0:e.clientY,top0:el.offsetTop,mids:rows.map(r=>r.offsetTop+r.offsetHeight/2)};
+  el.classList.add('drag');
+  try{g.setPointerCapture(e.pointerId);}catch(x){}
+});
+addEventListener('pointermove',e=>{
+  if(!dg)return;const dy=e.clientY-dg.y0,c=dg.top0+dg.h/2+dy;let to=dg.from;
+  dg.el.style.transform='translateY('+dy+'px) scale(1.015)';
+  dg.mids.forEach((m,i)=>{if(i>dg.from&&c>m)to=Math.max(to,i);if(i<dg.from&&c<m)to=Math.min(to,i);});
+  dg.to=to;
+  dg.rows.forEach((r,i)=>{if(r===dg.el)return;let sh=0;if(dg.from<to&&i>dg.from&&i<=to)sh=-dg.step;if(dg.from>to&&i<dg.from&&i>=to)sh=dg.step;r.style.transform=sh?'translateY('+sh+'px)':'';});
+});
+function dropDrag(){
+  if(!dg)return;const d=dg;dg=null;
+  d.el.style.transition='transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .2s';
+  d.el.style.transform='translateY('+((d.to-d.from)*d.step)+'px)';
+  setTimeout(()=>{const m=F.splice(d.from,1)[0];F.splice(d.to,0,m);render(false);preview();},200);
 }
+addEventListener('pointerup',dropDrag);addEventListener('pointercancel',dropDrag);
+$('flist').addEventListener('keydown',e=>{
+  const g=e.target.closest&&e.target.closest('.grip');if(!g||!/^Arrow(Up|Down)$/.test(e.key))return;e.preventDefault();
+  const i=[].indexOf.call($('flist').children,g.parentNode),j=i+(e.key==='ArrowUp'?-1:1);if(j<0||j>=F.length)return;
+  const m=F.splice(i,1)[0];F.splice(j,0,m);render(false);$('flist').children[j].querySelector('.grip').focus();preview();
+});
 
-function makeRows(n){
-  const genders=list($('genders').value)||['Male'], locs=list($('locs').value), roles=list($('roles').value);
-  const a=+$('amin').value, b=Math.max(a,+$('amax').value), mp=+$('mpct').value;
-  const rows=[];
-  for(let i=1;i<=n;i++){
-    const g = genders.length?pick(genders):'';
-    const female = /^f/i.test(g);
-    const pool = /^m/i.test(g)?FIRST_M : female?FIRST_F : FIRST_M.concat(FIRST_F);
-    rows.push({
-      id:i, first:pick(pool),
-      middle: Math.random()*100<mp ? pick(LAST) : '',
-      last:pick(LAST), age:int(a,b), gender:g,
-      loc:locs.length?pick(locs):'', role:roles.length?pick(roles):''
-    });
-  }
-  return rows;
-}
-
-function getN(){return Math.min(50000,Math.max(1,parseInt($('rows').value)||1));}
-
+// ----- data -----
+const getN=()=>Math.min(50000,Math.max(1,parseInt($('rows').value)||1));
+function opt(n){const g=list($('genders').value),r=list($('roles').value),l=list($('locs').value);
+  return{g:g.length?g:['Male','Female'],r:r.length?r:['Staff'],l:l.length?l:['Manila'],n:n};}
+function active(){return F.map(f=>({col:colName(f.name),t:f.t,gen:f.gen}));}
+function makeRows(n,fs){
+  const O=opt(n),b=(+$('blank').value||0)/100,out=[],all=FM.concat(FF);
+  for(let i=1;i<=n;i++){const c={first:P(all),last:P(LAST)};
+    out.push(fs.map(f=>{if(f.t==='an')return i;if(f.t==='ole')return null;let v=GEN[f.gen][2](c,i,O);if(b&&Math.random()<b)v=null;return v;}));}
+  return out;}
+function lkVals(f){const s={},c={first:'A',last:'B'},O=opt(50);for(let k=0;k<80;k++){const v=GEN[f.gen][2](c,k+1,O);if(v!=null&&v!=='')s[v]=1;}
+  const a=Object.keys(s).map(v=>String(v).replace(/["']/g,''));return a.length&&a.length<=25?a:[];}
+const disp=(v,f)=>v==null?'':typeof v==='boolean'?(v?'Yes':'No'):f.t==='ole'?'':String(v);
 function preview(){
-  const fs=active().filter(f=>f.key!=='id' || true);
-  const rows=makeRows(8);
-  if(!fs.length){$('preview').innerHTML='<p class="note">Select at least one field.</p>';afterPreview([]);return;}
-  $('preview').innerHTML='<table><tr>'+fs.map(f=>`<th>${f.col}</th>`).join('')+'</tr>'+
-    rows.map(r=>'<tr>'+fs.map(f=>`<td>${clean(r[f.key])}</td>`).join('')+'</tr>').join('')+'</table>';
+  const fs=active();
+  if(!fs.length){$('preview').innerHTML='<p class="note">Add at least one field.</p>';afterPreview([]);return;}
+  const rows=makeRows(8,fs);
+  $('preview').innerHTML='<table><tr>'+fs.map(f=>'<th>'+esc(f.col)+'</th>').join('')+'</tr>'+rows.map(r=>'<tr>'+r.map((v,k)=>'<td>'+esc(disp(v,fs[k]))+'</td>').join('')+'</tr>').join('')+'</table>';
   afterPreview(fs);
 }
-
-function download(name,text,mime){
-  const blob=new Blob([text],{type:mime});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download=name;
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-}
-
+function download(name,text,mime){const blob=new Blob([text],{type:mime});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
 function needFields(){
-  const fs=active();
-  if(!fs.length){alert('Select at least one field.');return null;}
-  const seen=new Set();
-  for(const f of fs){
-    const k=f.col.toLowerCase();
-    if(seen.has(k)){alert('Two fields are named "'+f.col+'". Column names must be unique.');return null;}
-    seen.add(k);
-  }
-  return fs;
-}
-
-const q = s => "'" + clean(s).replace(/'/g,"''") + "'";
-const vq = s => s.replace(/"/g,'""');
+  const fs=active();if(!fs.length){alert('Add at least one field.');return null;}
+  const seen={};let an=0;
+  for(const f of fs){if(!f.col){alert('Every field needs a name.');return null;}
+    const k=f.col.toLowerCase();if(seen[k]){alert('Two fields are named "'+f.col+'". Column names must be unique.');return null;}
+    seen[k]=1;if(f.t==='an')an++;}
+  if(an>1){alert('Access allows only one AutoNumber field per table.');return null;}
+  return fs;}
+const q=t=>"'"+clean(t).replace(/'/g,"''")+"'";
+const vq=t=>String(t).replace(/"/g,'""');
+function enc(v,f){
+  if(v==null||v===''||f.t==='ole')return 'NULL';
+  switch(f.t){case 'an':return v;case 'nw':case 'nd':case 'cu':return typeof v==='boolean'?(v?1:0):(+v||0);
+    case 'yn':return v?-1:0;case 'dt':return '#'+v+'#';case 'hl':return q(v+'#'+v+'#');default:return q(v);}}
 
 $('btnGen').onclick=()=>{
-  const fs=needFields(); if(!fs) return;
-  const file=safeName($('fname').value), table=safeIdent($('tname').value), rows=makeRows(getN());
-  const fmt=$('fmt').value;
-  const insertFs=fs.filter(f=>f.key!=='id');
-  const create=`CREATE TABLE [${table}] (`+fs.map(f=>`[${f.col}] ${f.type}`).join(', ')+`)`;
-
-  const L=[];
-  L.push("' Generated by Access DB Generator");
-  L.push('Option Explicit');
-  L.push('Dim fso, folder, dbPath, cat, conn, prov, provs, ok, i');
-  L.push('Set fso = CreateObject("Scripting.FileSystemObject")');
-  L.push('folder = fso.GetParentFolderName(WScript.ScriptFullName)');
-  L.push(`dbPath = folder & "\\${vq(file)}.${fmt}"`);
-  L.push('If fso.FileExists(dbPath) Then fso.DeleteFile dbPath, True');
-  L.push(fmt==='mdb'
-    ? 'provs = Array("Microsoft.Jet.OLEDB.4.0", "Microsoft.ACE.OLEDB.12.0", "Microsoft.ACE.OLEDB.16.0")'
-    : 'provs = Array("Microsoft.ACE.OLEDB.16.0", "Microsoft.ACE.OLEDB.12.0")');
-  L.push('ok = ""');
-  L.push('On Error Resume Next');
-  L.push('For Each prov In provs');
-  L.push('  Err.Clear');
-  L.push('  Set cat = CreateObject("ADOX.Catalog")');
-  L.push('  cat.Create "Provider=" & prov & ";Data Source=" & dbPath' + (fmt==='mdb' ? ' & ";Jet OLEDB:Engine Type=5"' : ''));
-  L.push('  If Err.Number = 0 Then ok = prov : Exit For');
-  L.push('Next');
-  L.push('On Error GoTo 0');
-  L.push('If ok = "" Then');
-  L.push('  Dim wow : wow = fso.GetSpecialFolder(0) & "\\SysWOW64\\wscript.exe"');
-  L.push('  If WScript.Arguments.Count = 0 And fso.FileExists(wow) Then');
-  L.push('    CreateObject("WScript.Shell").Run """" & wow & """ """ & WScript.ScriptFullName & """ x86", 1, True');
-  L.push('    WScript.Quit 0');
-  L.push('  End If');
-  L.push('  MsgBox "Could not create the database." & vbCrLf & "Install Microsoft Access or the Access Database Engine (ACE OLEDB).", 16, "Access DB Generator"');
-  L.push('  WScript.Quit 1');
-  L.push('End If');
-  L.push('Set conn = CreateObject("ADODB.Connection")');
-  L.push('conn.Open "Provider=" & ok & ";Data Source=" & dbPath');
-  L.push(`conn.Execute "${vq(create)}"`);
-  L.push('conn.BeginTrans');
-  const colList='['+insertFs.map(f=>f.col).join('], [')+']';
-  rows.forEach(r=>{
-    if(!insertFs.length){ L.push(`conn.Execute "INSERT INTO [${table}] ([ID]) VALUES (${r.id})"`); return; }
-    const vals=insertFs.map(f=> f.key==='age' ? (+r.age) : q(r[f.key]));
-    L.push(`conn.Execute "${vq(`INSERT INTO [${table}] (${colList}) VALUES (${vals.join(', ')})`)}"`);
-  });
+  const fs=needFields();if(!fs)return;
+  const file=safeName($('fname').value),table=safeIdent($('tname').value),fmt=$('fmt').value,rows=makeRows(getN(),fs);
+  let ins=[];fs.forEach((f,k)=>{if(f.t!=='an')ins.push(k);});if(!ins.length)ins=[0];
+  const create='CREATE TABLE ['+table+'] ('+fs.map(f=>'['+f.col+'] '+sqlT(f)).join(', ')+')';
+  const L=["' Generated by Access DB Generator",'Option Explicit','Dim fso, folder, dbPath, cat, cat2, conn, prov, provs, ok',
+   'Set fso = CreateObject("Scripting.FileSystemObject")','folder = fso.GetParentFolderName(WScript.ScriptFullName)',
+   'dbPath = folder & "\\'+vq(file)+'.'+fmt+'"','If fso.FileExists(dbPath) Then fso.DeleteFile dbPath, True',
+   fmt==='mdb'?'provs = Array("Microsoft.Jet.OLEDB.4.0", "Microsoft.ACE.OLEDB.12.0", "Microsoft.ACE.OLEDB.16.0")':'provs = Array("Microsoft.ACE.OLEDB.16.0", "Microsoft.ACE.OLEDB.12.0")',
+   'ok = ""','On Error Resume Next','For Each prov In provs','  Err.Clear','  Set cat = CreateObject("ADOX.Catalog")',
+   '  cat.Create "Provider=" & prov & ";Data Source=" & dbPath'+(fmt==='mdb'?' & ";Jet OLEDB:Engine Type=5"':''),
+   '  If Err.Number = 0 Then ok = prov : Exit For','Next','On Error GoTo 0','If ok = "" Then',
+   '  Dim wow : wow = fso.GetSpecialFolder(0) & "\\SysWOW64\\wscript.exe"','  If WScript.Arguments.Count = 0 And fso.FileExists(wow) Then',
+   '    CreateObject("WScript.Shell").Run """" & wow & """ """ & WScript.ScriptFullName & """ x86", 1, True','    WScript.Quit 0','  End If',
+   '  MsgBox "Could not create the database." & vbCrLf & "Install Microsoft Access or the Access Database Engine (ACE OLEDB).", 16, "Access DB Generator"',
+   '  WScript.Quit 1','End If','Set conn = CreateObject("ADODB.Connection")','conn.Open "Provider=" & ok & ";Data Source=" & dbPath',
+   'conn.Execute "'+vq(create)+'"','conn.BeginTrans'];
+  const cl='['+ins.map(k=>fs[k].col).join('], [')+']';
+  rows.forEach(r=>L.push('conn.Execute "'+vq('INSERT INTO ['+table+'] ('+cl+') VALUES ('+ins.map(k=>enc(r[k],fs[k])).join(', ')+')')+'"'));
   L.push('conn.CommitTrans');
+  const hls=fs.filter(f=>f.t==='hl');
+  if(hls.length){L.push('On Error Resume Next','Set cat2 = CreateObject("ADOX.Catalog")','Set cat2.ActiveConnection = conn');
+    hls.forEach(f=>L.push('cat2.Tables("'+vq(table)+'").Columns("'+vq(f.col)+'").Properties("Jet OLEDB:Hyperlink").Value = True'));L.push('On Error GoTo 0');}
   L.push('conn.Close');
-  L.push(`MsgBox "Created " & dbPath & vbCrLf & "Table: ${vq(table)} (${rows.length} rows)", 64, "Access DB Generator"`);
-  download(file+'_builder.vbs', L.join('\r\n')+'\r\n','text/vbscript');
+  const lks=fs.filter(f=>f.t==='lk');
+  lks.forEach(f=>{const v=lkVals(f);if(v.length)L.push('MakeLookup dbPath, "'+vq(table)+'", "'+vq(f.col)+'", "'+'""'+v.join('"";""')+'""'+'"');});
+  L.push('MsgBox "Created " & dbPath & vbCrLf & "Table: '+vq(table)+' ('+rows.length+' rows)", 64, "Access DB Generator"','WScript.Quit 0');
+  if(lks.length)L.push('Sub MakeLookup(dbPath, t, c, src)','  Dim dbe, db, fld, p','  On Error Resume Next','  Set dbe = CreateObject("DAO.DBEngine.120")',
+   '  If Err.Number <> 0 Then Err.Clear : Set dbe = CreateObject("DAO.DBEngine.36")','  Set db = dbe.OpenDatabase(dbPath)','  Set fld = db.TableDefs(t).Fields(c)',
+   '  Set p = fld.CreateProperty("DisplayControl", 3, 111) : fld.Properties.Append p','  Set p = fld.CreateProperty("RowSourceType", 10, "Value List") : fld.Properties.Append p',
+   '  Set p = fld.CreateProperty("RowSource", 10, src) : fld.Properties.Append p','  db.Close','End Sub');
+  download(file+'_builder.vbs',L.join('\r\n')+'\r\n','text/vbscript');
 };
-
 $('btnCsv').onclick=()=>{
-  const fs=needFields(); if(!fs) return;
-  const rows=makeRows(getN());
-  const esc=v=>{v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
-  const out=[fs.map(f=>f.col).join(',')].concat(rows.map(r=>fs.map(f=>esc(r[f.key])).join(',')));
+  const fs=needFields();if(!fs)return;
+  const ce=v=>{v=String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  const out=[fs.map(f=>ce(f.col)).join(',')].concat(makeRows(getN(),fs).map(r=>r.map((v,k)=>ce(disp(v,fs[k]))).join(',')));
   download(safeName($('fname').value)+'.csv','\ufeff'+out.join('\r\n'),'text/csv');
 };
-
 $('btnPrev').onclick=preview;
 document.querySelectorAll('input,textarea').forEach(e=>e.addEventListener('change',preview));
+F=[{name:'FirstName',t:'st',gen:'first',p:'First Name'},{name:'LastName',t:'st',gen:'last',p:'Last Name'}];
+drawTabs();drawChips();render(false);
+
 /* ===== interactivity & animation ===== */
 const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
 
@@ -436,15 +513,13 @@ const fmtSize=v=>v>=1024?(v/1024).toFixed(1)+' MB':v+' KB';
 // runs after every preview refresh
 function afterPreview(fs){
   document.querySelectorAll('#preview tr').forEach((tr,i)=>{if(i){tr.className='r';tr.style.animationDelay=(i*50)+'ms';}});
-  box.querySelectorAll('.frow').forEach(l=>l.classList.toggle('off',!l.querySelector('[data-k]').checked));
-  const n=getN();
-  const sample=makeRows(8);
-  const avg=fs.length?sample.reduce((a,r)=>a+fs.reduce((b,f)=>b+(f.key==='id'||f.key==='age'?4:String(r[f.key]).length+1),0),0)/8+8:0;
+  const n=getN(),smp=makeRows(8,fs);
+  const avg=fs.length?smp.reduce((a,r)=>a+r.reduce((b,v)=>b+(v==null?1:typeof v==='string'?v.length+1:8),0),0)/8+8:0;
   countTo($('sRows'),n);
   countTo($('sCols'),fs.length);
   countTo($('sSize'),Math.round(120+n*avg/1024),fmtSize);
   const t=safeIdent($('tname').value);
-  const sql=fs.length?'CREATE TABLE ['+t+'] (\n'+fs.map(f=>'  ['+f.col+'] '+f.type).join(',\n')+'\n);':'-- select at least one field';
+  const sql=fs.length?'CREATE TABLE ['+t+'] (\n'+fs.map(f=>'  ['+f.col+'] '+sqlT(f)).join(',\n')+'\n);':'-- add at least one field';
   const el=$('sql'); el.textContent=sql; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
 }
 
