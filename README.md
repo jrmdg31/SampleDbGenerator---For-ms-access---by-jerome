@@ -9,10 +9,16 @@ I made this because setting up dummy Access databases by hand is slow, boring, a
 👉 **Live tool:** `https://jrmdg31.github.io/SampleDbGenerator---For-ms-access---by-jerome/`
 ---
 
-## 🎬 See it in action
-  [![Watch the demo](https://img.youtube.com/vi/OczU0eB0NvQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=OczU0eB0NvQ)
-  -->
-*Short on time? The video shows the whole flow in under a minute: pick fields, generate, double-click, done.*
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=OczU0eB0NvQ">
+    <img src="https://img.youtube.com/vi/OczU0eB0NvQ/maxresdefault.jpg" alt="Access DB Generator demo">
+  </a>
+</p>
+
+<p align="center">
+  <strong>Watch the demo on YouTube</strong><br>
+  See the complete workflow: customize fields → generate → download → create the Access database.
+</p>
 
 ---
 
