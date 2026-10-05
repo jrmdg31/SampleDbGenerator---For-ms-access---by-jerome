@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Access DB Generator</title>
+<meta property="og:description" content="A simple to use Microsoft Access Dummy Database Generator. Generate up to 50,000!">
+<meta property="og:image" content=" https://imgur.com/a/QU9GqZl">
 <style>
   :root{--bg:#141210;--tx:#f3ece2;--mut:#8f877c;--ac:#c98a4b;--bd:#2a2622;--in:#1b1815}
   *{box-sizing:border-box}
@@ -70,6 +72,8 @@
   .frow:hover{border-bottom-color:var(--ac)}
   .frow.off{opacity:.35}
   .frow.off input[type=text]{pointer-events:none}
+  .previewHead{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap}
+  .previewHead h2{margin-bottom:0}
   button:active{transform:scale(.97)}
   button.busy{position:relative;overflow:hidden;pointer-events:none}
   button.busy:before{content:"";position:absolute;left:0;bottom:0;height:2px;background:var(--ac);animation:load .45s linear forwards}
@@ -87,7 +91,7 @@
 
   /* --- unblock fix section --- */
   @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
-  .top{position:sticky;top:0;z-index:5;background:rgba(20,18,16,.9);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .top{position:sticky;top:0;z-index:5;background:var(--bg)}
   .tr{display:flex;gap:28px;align-items:center}
   .fixlink{color:var(--ac);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s}
   .fixlink:hover{border-bottom-color:var(--ac)}
@@ -185,6 +189,45 @@
   .frow2 .x:hover{color:#d9534f}
 
   #addBtn:after{content:" +"}
+
+  /* --- multi-table database manager --- */
+  .tableBlock{grid-column:1/-1}
+  #tableManager{display:flex;flex-direction:column;gap:8px}
+  .tableItem{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bd);padding:4px 0}
+  .tableItem.on{border-bottom-color:var(--ac)}
+  .tablePick{flex:1;min-width:0;border:0!important;border-bottom:0!important;padding:6px 0!important;text-align:left;color:var(--mut);letter-spacing:.02em;text-transform:none;font-size:14px;font-weight:400}
+  .tableItem.on .tablePick{color:var(--tx)}
+  .tablePick:after{content:""}
+  .tableRename{flex:1;min-width:0;padding:6px 0!important}
+  .tableRemove{border:0!important;padding:6px 4px!important;color:var(--mut)!important;font-size:18px!important;line-height:1}
+  .tableRemove:after{content:""}
+  .tableRemove:hover{background:none!important;color:#d9534f!important}
+  #addTable{margin-top:4px;align-self:flex-start}
+  #addTable:after{content:" +"}
+  .tableMeta{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-right:4px}
+  .tableCopy{border:0!important;padding:6px 5px!important;color:var(--mut)!important;font-size:13px!important;line-height:1}
+  .tableCopy:after{content:""}
+  .tableCopy:hover{background:none!important;color:var(--tx)!important}
+  .dangerAlt{color:#a98b82!important}
+  .dangerAlt:hover{background:none!important;color:#d9534f!important}
+  .projectRow{gap:26px}
+  .projectNote{max-width:760px}
+  .tableStat{font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);white-space:nowrap}
+  @media (max-width:720px){.tableStat{display:none}.projectRow{gap:18px}}
+  @media (max-width:720px){.tableItem{flex-wrap:wrap}.tableRename{order:2;flex-basis:calc(100% - 36px)}.tableRemove{order:2}}
+
+  /* --- relationships --- */
+  .relationNote{max-width:820px;margin-top:0}
+  #relationList{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+  .relationRow{display:grid;grid-template-columns:1.1fr 1.1fr 28px 1.1fr 1.1fr auto;gap:12px;align-items:end;padding:12px 14px;border:1px solid var(--bd);background:#181512;border-radius:8px}
+  .relationArrow{align-self:center;text-align:center;color:var(--ac);font-size:18px;padding-bottom:6px}
+  .relationRow select{padding:6px 0;font-size:13px}
+  .relationRemove{border:0!important;padding:4px 4px!important;color:var(--mut)!important;font-size:18px!important;line-height:1}
+  .relationRemove:after{content:""}
+  .relationRemove:hover{background:none!important;color:#d9534f!important}
+  .relationRow.invalid{border-color:#8d5550}
+  @media (max-width:900px){.relationRow{grid-template-columns:1fr 1fr 28px 1fr 1fr auto}}
+  @media (max-width:720px){.relationRow{grid-template-columns:1fr;gap:8px}.relationArrow{display:none}}
 
   /* --- numeric range editor --- */
   .rng{
@@ -290,9 +333,9 @@
         <input type="text" id="fname" value="SampleDB">
       </div>
 
-      <div>
-        <label>Table name</label>
-        <input type="text" id="tname" value="People">
+      <div class="tableBlock">
+        <label>Tables in this file</label>
+        <div id="tableManager"></div>
       </div>
 
       <div>
@@ -307,6 +350,30 @@
         <label>Number of rows (max 50,000)</label>
         <input type="number" id="rows" value="100" min="1" max="50000">
       </div>
+    </div>
+
+    <div class="row projectRow" style="margin-top:20px">
+      <button class="alt" id="saveProject" type="button">Save project</button>
+      <button class="alt" id="loadProject" type="button">Load project</button>
+      <button class="alt dangerAlt" id="resetProject" type="button">Reset</button>
+      <input type="file" id="projectFile" accept="application/json,.json" hidden>
+    </div>
+
+    <p class="note projectNote" style="margin-bottom:0">
+      Save a project as JSON to preserve every table, field, generator, range, and data option. Loading it restores the editor without creating an Access file.
+    </p>
+  </div>
+
+  <input type="hidden" id="tname" value="People">
+
+  <div class="card" id="relationships">
+    <h2>Relationships</h2>
+    <p class="note relationNote">
+      Optional one-to-many links. A child field receives values from the real generated values of the parent field, so related tables stay internally consistent. AutoNumber parents should use a Number (whole) child field.
+    </p>
+    <div id="relationList"></div>
+    <div class="row" style="margin-top:16px">
+      <button class="alt" id="addRelation" type="button">Add relationship</button>
     </div>
   </div>
 
@@ -351,6 +418,11 @@
       </div>
 
       <div>
+        <label>Data seed</label>
+        <input type="number" id="seed" value="20261005" min="1" max="2147483647" step="1">
+      </div>
+
+      <div>
         <label>Genders (comma separated)</label>
         <input type="text" id="genders" value="Male, Female">
       </div>
@@ -371,7 +443,6 @@
     <div class="row">
       <button id="btnGen">Generate &amp; download Access builder</button>
       <button class="alt" id="btnCsv">Download CSV only</button>
-      <button class="alt" id="btnPrev">Shuffle preview</button>
     </div>
 
     <p class="note" style="margin-bottom:0">
@@ -465,7 +536,10 @@
   </div>
 
   <div class="card">
-    <h2>Preview &mdash; first 8 rows</h2>
+    <div class="previewHead">
+      <h2>Preview &mdash; first 8 rows</h2>
+      <button class="alt" id="btnPrev" type="button">Shuffle preview</button>
+    </div>
 
     <div class="stats">
       <div><small>Rows</small><b id="sRows">0</b></div>
@@ -497,8 +571,14 @@ const dT=ms=>{const d=new Date(ms);return dO(ms)+' '+Z(d.getHours())+':'+Z(d.get
 const rms=(a,b)=>new Date(a,0,1).getTime()+Math.random()*(new Date(b+1,0,1)-new Date(a,0,1));
 const list=t=>t.split(',').map(x=>x.trim()).filter(Boolean);
 const clean=t=>String(t).replace(/[^\x20-\x7E]/g,'');
-const safeName=t=>(clean(t).replace(/[\\/:*?"<>|]/g,'').trim()||'Database');
-const safeIdent=t=>(clean(t).replace(/[^A-Za-z0-9_ ]/g,'').trim()||'People');
+const safeName=t=>{
+  let n=clean(t).replace(/[\\/:*?"<>|]/g,'').trim()||'Database';
+  n=n.replace(/\.(?:mdb|accdb)$/i,'').replace(/[. ]+$/g,'').trim();
+  if(/^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i.test(n))n=n+'_DB';
+  return n||'Database';
+};
+const validObjectName=t=>clean(String(t)).replace(/[^A-Za-z0-9_ ]/g,'').trim().slice(0,64);
+const safeIdent=t=>validObjectName(t)||'People';
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const FM=['James','John','Mark','Paul','Daniel','Michael','Joseph','Carlo','Miguel','Rafael','Angelo','Jose','Luis','Gabriel','Nathan'];
 const FF=['Maria','Anna','Grace','Sofia','Isabel','Angela','Patricia','Kristine','Jasmine','Clarisse','Nicole','Rose','Camille','Lea','Bianca'];
@@ -1054,13 +1134,300 @@ function styleName(n,st){
         :w.map(c).join('');
 }
 
-const colName=n=>clean(n).replace(/[\[\]\.!`"']/g,'').trim();
+const colName=n=>validObjectName(n);
 
-/* ----- field state ----- */
+/* ----- multi-table state ----- */
 
 let F=[];
+let TABLES=[];
+let activeTableIndex=0;
 let cat=0;
+let REL=[];
 let pv;
+
+const tableName=()=>safeIdent(TABLES[activeTableIndex]?.name||'People');
+
+function uniqueTableName(base,ignoreIndex=-1){
+  const root=safeIdent(base)||'Table';
+  let name=root;
+  let n=2;
+  while(TABLES.some((t,i)=>i!==ignoreIndex&&t.name.toLowerCase()===name.toLowerCase())){
+    const suffix=String(n++);
+    name=(root.slice(0,Math.max(1,64-suffix.length))+suffix).trim();
+  }
+  return name;
+}
+
+function saveActiveTable(){
+  if(!TABLES[activeTableIndex])return;
+  TABLES[activeTableIndex].fields=F;
+  TABLES[activeTableIndex].name=safeIdent($('tname')?.value||TABLES[activeTableIndex].name);
+}
+
+function loadTable(i,redrawManager=true){
+  if(i<0||i>=TABLES.length||i===activeTableIndex)return;
+  saveActiveTable();
+  activeTableIndex=i;
+  F=TABLES[i].fields;
+  $('tname').value=TABLES[i].name;
+  render(false);
+  drawChips();
+  if(redrawManager)renderTableManager();
+  preview();
+}
+
+function renderTableManager(){
+  const m=$('tableManager');
+  if(!m)return;
+  m.innerHTML='';
+
+  TABLES.forEach((t,i)=>{
+    const row=document.createElement('div');
+    row.className='tableItem'+(i===activeTableIndex?' on':'');
+    row.innerHTML=
+      '<span class="tableMeta">'+Z(i+1)+'</span>'+
+      '<button type="button" class="tablePick" data-i="'+i+'">'+esc(t.name)+'</button>'+
+      '<span class="tableStat">'+t.fields.length+' field'+(t.fields.length===1?'':'s')+' &middot; '+getN()+' rows</span>'+
+      '<input class="tableRename" type="text" value="'+esc(t.name)+'" aria-label="Table name" maxlength="64">'+
+      '<button type="button" class="tableCopy" title="Duplicate table" aria-label="Duplicate table" data-i="'+i+'">&#x2750;</button>'+
+      (TABLES.length>1?'<button type="button" class="tableRemove" title="Remove table" aria-label="Remove table" data-i="'+i+'">&times;</button>':'');
+
+    const pick=row.querySelector('.tablePick');
+    const input=row.querySelector('.tableRename');
+    const copy=row.querySelector('.tableCopy');
+    const remove=row.querySelector('.tableRemove');
+
+    pick.onclick=()=>loadTable(i);
+    input.onfocus=()=>{
+      if(i!==activeTableIndex){
+        loadTable(i,false);
+        document.querySelectorAll('.tableItem').forEach((x,k)=>x.classList.toggle('on',k===activeTableIndex));
+      }
+      input.dataset.before=TABLES[i].name;
+    };
+    input.oninput=()=>{
+      TABLES[i].name=input.value;
+      if(i===activeTableIndex){
+        $('tname').value=input.value;
+        preview();
+      }
+      pick.textContent=input.value||'Untitled table';
+    };
+    input.onchange=()=>{
+      const old=input.dataset.before||TABLES[i].name;
+      const typed=input.value;
+      TABLES[i].name=safeIdent(typed)||uniqueTableName('Table',i);
+      if(TABLES.some((t,k)=>k!==i&&t.name.toLowerCase()===TABLES[i].name.toLowerCase())){
+        TABLES[i].name=uniqueTableName(TABLES[i].name,i);
+      }
+      input.value=TABLES[i].name;
+      pick.textContent=TABLES[i].name;
+      if(old!==TABLES[i].name){
+        REL.forEach(r=>{
+          if(r.childTable===old)r.childTable=TABLES[i].name;
+          if(r.parentTable===old)r.parentTable=TABLES[i].name;
+        });
+        renderRelations();
+      }
+      if(i===activeTableIndex){$('tname').value=TABLES[i].name;preview();}
+      if(old!==TABLES[i].name)toast('Table name normalized to: '+TABLES[i].name,false);
+    };
+    copy.onclick=()=>duplicateTable(i);
+    if(remove)remove.onclick=()=>removeTable(i);
+
+    m.appendChild(row);
+  });
+
+  const b=document.createElement('button');
+  b.type='button';
+  b.className='alt';
+  b.id='addTable';
+  b.textContent='Add table';
+  b.onclick=addTable;
+  m.appendChild(b);
+}
+
+function addTable(){
+  saveActiveTable();
+  const i=TABLES.length;
+  const name=uniqueTableName('Table');
+  TABLES.push({
+    name:name,
+    fields:[
+      {name:'ID',t:'an',gen:'seq',p:'ID',pid:'ID',rangeCustom:false},
+      {name:'Name',t:'st',gen:'first',p:'Name',pid:'Name',rangeCustom:false}
+    ]
+  });
+  activeTableIndex=i;
+  F=TABLES[i].fields;
+  $('tname').value=name;
+  render(false);
+  drawChips();
+  renderTableManager();
+  renderRelations();
+  preview();
+}
+
+function duplicateTable(i){
+  saveActiveTable();
+  const src=TABLES[i];
+  const copy={
+    name:uniqueTableName(src.name+'Copy'),
+    fields:src.fields.map(f=>({...f}))
+  };
+  TABLES.splice(i+1,0,copy);
+  activeTableIndex=i+1;
+  F=copy.fields;
+  $('tname').value=copy.name;
+  render(false);
+  drawChips();
+  renderTableManager();
+  renderRelations();
+  preview();
+}
+
+function removeTable(i){
+  if(TABLES.length<=1)return;
+  if(!confirm('Remove table "'+TABLES[i].name+'" from this database?'))return;
+
+  const wasActive=activeTableIndex===i;
+  const removedName=TABLES[i].name;
+  TABLES.splice(i,1);
+  REL=REL.filter(r=>r.childTable!==removedName&&r.parentTable!==removedName);
+
+  if(wasActive){
+    activeTableIndex=Math.min(i,TABLES.length-1);
+  }else if(i<activeTableIndex){
+    activeTableIndex--;
+  }
+
+  F=TABLES[activeTableIndex].fields;
+  $('tname').value=TABLES[activeTableIndex].name;
+  render(false);
+  drawChips();
+  renderTableManager();
+  renderRelations();
+  preview();
+}
+
+
+function tableByName(name){
+  return TABLES.find(t=>t.name===name)||null;
+}
+
+function fieldByName(table,name){
+  return table?.fields.find(f=>colName(f.name)===colName(name))||null;
+}
+
+function relationTypesCompatible(child,parent){
+  return !!child&&!!parent&&parent.t==='an'&&child.t==='nw';
+}
+
+
+function renderRelations(){
+  const list=$('relationList');
+  if(!list)return;
+  list.innerHTML='';
+
+  REL=REL.filter(r=>{
+    const child=tableByName(r.childTable), parent=tableByName(r.parentTable);
+    return child&&parent&&child!==parent&&fieldByName(child,r.childField)&&fieldByName(parent,r.parentField);
+  });
+
+  REL.forEach((rel,idx)=>{
+    const row=document.createElement('div');
+    const child=tableByName(rel.childTable);
+    const parent=tableByName(rel.parentTable);
+    const childField=fieldByName(child,rel.childField);
+    const parentField=fieldByName(parent,rel.parentField);
+    const valid=relationTypesCompatible(childField,parentField);
+    row.className='relationRow'+(valid?'':' invalid');
+
+    row.innerHTML=
+      '<div><label>Child table</label><select class="rct">'+TABLES.map(t=>'<option value="'+esc(t.name)+'"'+(t.name===rel.childTable?' selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select></div>'+
+      '<div><label>Child field</label><select class="rcf">'+(child?child.fields.map(f=>'<option value="'+esc(colName(f.name))+'"'+(colName(f.name)===colName(rel.childField)?' selected':'')+'>'+esc(colName(f.name))+'</option>').join(''):'')+'</select></div>'+
+      '<div class="relationArrow">→</div>'+
+      '<div><label>Parent table</label><select class="rpt">'+TABLES.filter(t=>t.name!==rel.childTable).map(t=>'<option value="'+esc(t.name)+'"'+(t.name===rel.parentTable?' selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select></div>'+
+      '<div><label>Parent field</label><select class="rpf">'+(parent?parent.fields.filter(f=>f.t==='an').map(f=>'<option value="'+esc(colName(f.name))+'"'+(colName(f.name)===colName(rel.parentField)?' selected':'')+'>'+esc(colName(f.name))+'</option>').join(''):'')+'</select></div>'+
+      '<button type="button" class="relationRemove" title="Remove relationship" aria-label="Remove relationship">&times;</button>';
+
+    const ct=row.querySelector('.rct');
+    const cf=row.querySelector('.rcf');
+    const pt=row.querySelector('.rpt');
+    const pf=row.querySelector('.rpf');
+
+    ct.onchange=()=>{
+      const oldChild=rel.childTable;
+      rel.childTable=ct.value;
+      if(rel.childTable===rel.parentTable){
+        const alt=TABLES.find(t=>t.name!==rel.childTable);
+        rel.parentTable=alt?.name||rel.parentTable;
+      }
+      const c=tableByName(rel.childTable);
+      rel.childField=colName(c?.fields[0]?.name||'');
+      const p=tableByName(rel.parentTable);
+      rel.parentField=colName(p?.fields.find(f=>relationTypesCompatible(c?.fields[0],f))?.name||p?.fields[0]?.name||'');
+      renderRelations();
+      preview();
+    };
+    cf.onchange=()=>{rel.childField=cf.value;renderRelations();preview();};
+    pt.onchange=()=>{
+      rel.parentTable=pt.value;
+      const p=tableByName(rel.parentTable);
+      const selected=p?.fields.find(f=>relationTypesCompatible(fieldByName(tableByName(rel.childTable),rel.childField),f));
+      rel.parentField=colName(selected?.name||p?.fields[0]?.name||'');
+      renderRelations();
+      preview();
+    };
+    pf.onchange=()=>{rel.parentField=pf.value;renderRelations();preview();};
+    row.querySelector('.relationRemove').onclick=()=>{REL.splice(idx,1);renderRelations();preview();};
+    list.appendChild(row);
+  });
+
+  if(!REL.length){
+    list.innerHTML='<p class="note" style="margin:8px 0 0">No relationships yet.</p>';
+  }
+}
+
+function addRelation(){
+  if(TABLES.length<2){
+    alert('Add at least two tables before creating a relationship.');
+    return;
+  }
+
+  const parent=TABLES.find(t=>t.fields.some(f=>f.t==='an'));
+  if(!parent){
+    alert('A parent table needs an AutoNumber field first.');
+    return;
+  }
+
+  const childCandidates=TABLES.filter(t=>t!==parent&&t.fields.some(f=>f.t==='nw'));
+  const child=childCandidates[0];
+  if(!child){
+    alert('Add a Number (whole) field to the child table first.');
+    return;
+  }
+
+  const parentField=parent.fields.find(f=>f.t==='an');
+  const childField=child.fields.find(f=>f.t==='nw');
+  const exists=REL.some(r=>r.childTable===child.name&&r.childField===colName(childField.name)&&r.parentTable===parent.name&&r.parentField===colName(parentField.name));
+  if(exists){
+    toast('That relationship already exists.',false);
+    return;
+  }
+
+  REL.push({
+    childTable:child.name,
+    childField:colName(childField.name),
+    parentTable:parent.name,
+    parentField:colName(parentField.name)
+  });
+  renderRelations();
+  preview();
+}
+
+$('addRelation').onclick=addRelation;
+
 
 function isNumericType(t){
   return NUM_TYPES.has(t);
@@ -1221,9 +1588,31 @@ function render(anim){
       rmax.step=step;
     }
 
+    nm.onfocus=()=>{
+      nm.dataset.before=f.name;
+    };
+
     nm.oninput=()=>{
       f.name=nm.value;
       dp();
+    };
+
+    nm.onchange=()=>{
+      const before=nm.dataset.before||f.name;
+      f.name=validObjectName(nm.value);
+      nm.value=f.name;
+      if(before!==f.name){
+        const tn=TABLES[activeTableIndex]?.name;
+        REL.forEach(rel=>{
+          if(rel.childTable===tn&&rel.childField===colName(before))rel.childField=colName(f.name);
+          if(rel.parentTable===tn&&rel.parentField===colName(before))rel.parentField=colName(f.name);
+        });
+      }
+      if(before!==f.name)toast(f.name?'Field name normalized to: '+f.name:'Enter a valid Access field name.',false);
+      render(false);
+      drawChips();
+      renderRelations();
+      preview();
     };
 
     ty.onchange=()=>{
@@ -1252,6 +1641,7 @@ function render(anim){
       }
 
       render(false);
+      renderRelations();
       preview();
     };
 
@@ -1290,6 +1680,7 @@ function render(anim){
       }
 
       render(false);
+      renderRelations();
       preview();
     };
 
@@ -1327,6 +1718,8 @@ function render(anim){
         F.splice(F.indexOf(f),1);
         render(false);
         drawChips();
+        renderTableManager();
+        renderRelations();
         preview();
       },230);
     };
@@ -1369,6 +1762,8 @@ function addF(o){
 
   F.push(o);
   render(true);
+  renderTableManager();
+  renderRelations();
 }
 
 function drawTabs(){
@@ -1461,11 +1856,23 @@ $('addBtn').onclick=()=>{
 
 $('nstyle').onchange=()=>{
 
+  const tn=TABLES[activeTableIndex]?.name;
+  const renames=[];
   F.forEach(f=>{
-    f.name=styleName(f.name,$('nstyle').value);
+    const before=colName(f.name);
+    f.name=styleName(f.name,$('nstyle').value).slice(0,64);
+    renames.push([before,colName(f.name)]);
+  });
+  REL.forEach(rel=>{
+    renames.forEach(([before,after])=>{
+      if(rel.childTable===tn&&rel.childField===before)rel.childField=after;
+      if(rel.parentTable===tn&&rel.parentField===before)rel.parentField=after;
+    });
   });
 
   render(false);
+  renderTableManager();
+  renderRelations();
   preview();
 };
 
@@ -1638,42 +2045,156 @@ function active(){
   }));
 }
 
-function makeRows(n,fs){
+const DEFAULT_SEED=20261005;
+const MAX_SEED=2147483647;
 
-  const O=opt(n);
-  const b=(+$('blank').value||0)/100;
-  const out=[];
-  const all=FM.concat(FF);
+function getSeed(){
+  const n=parseInt($('seed')?.value,10);
+  return Number.isFinite(n)&&n>0?Math.min(MAX_SEED,n):DEFAULT_SEED;
+}
 
-  for(let i=1;i<=n;i++){
+function seedHash(n){
+  let x=(Number(n)||DEFAULT_SEED)>>>0;
+  x^=x>>>16; x=Math.imul(x,0x7feb352d);
+  x^=x>>>15; x=Math.imul(x,0x846ca68b);
+  x^=x>>>16;
+  return x>>>0;
+}
 
-    const c={
-      first:P(all),
-      last:P(LAST)
-    };
+function seededRng(seed){
+  let a=seedHash(seed);
+  return()=>{
+    a|=0;
+    a=a+0x6D2B79F5|0;
+    let t=Math.imul(a^a>>>15,1|a);
+    t=t+Math.imul(t^t>>>7,61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296;
+  };
+}
 
-    out.push(
-      fs.map(f=>{
+function withSeed(seed,fn){
+  const old=Math.random;
+  Math.random=seededRng(seed);
+  try{return fn();}
+  finally{Math.random=old;}
+}
 
+function tableSeed(index){
+  return seedHash(getSeed()+((index+1)*2654435761));
+}
+
+function makeRowsFor(n,fs,seed){
+  const build=()=>{
+    const O=opt(n);
+    const b=(+$('blank').value||0)/100;
+    const out=[];
+    const all=FM.concat(FF);
+
+    for(let i=1;i<=n;i++){
+      const c={first:P(all),last:P(LAST)};
+      out.push(fs.map(f=>{
         if(f.t==='an')return i;
         if(f.t==='ole')return null;
-
         let v=generateValue(f,c,i,O);
-
-        if(
-          b&&
-          Math.random()<b&&
-          f.t!=='an'
-        ){
-          v=null;
-        }
-
+        if(b&&Math.random()<b&&f.t!=='an')v=null;
         return v;
-      })
-    );
+      }));
+    }
+    return out;
+  };
+
+  return seed==null?build():withSeed(seed,build);
+}
+
+function makeRows(n,fs,seed){
+  return makeRowsFor(n,fs,seed);
+}
+
+function snapshotSpecs(rowCount){
+  return TABLES.map(t=>({
+    name:safeIdent(t.name),
+    fields:t.fields.map(f=>({...f,col:colName(f.name)})),
+    rows:rowCount
+  }));
+}
+
+function relationIndex(specs,name){
+  return specs.findIndex(t=>t.name===name);
+}
+
+function fieldIndex(fs,name){
+  const target=colName(name);
+  return fs.findIndex(f=>colName(f.name)===target);
+}
+
+function validateRelations(specs){
+  for(const rel of REL){
+    const ci=relationIndex(specs,rel.childTable);
+    const pi=relationIndex(specs,rel.parentTable);
+    if(ci<0||pi<0||ci===pi){
+      alert('A relationship points to a missing or invalid table.');
+      return false;
+    }
+    const cf=specs[ci].fields[fieldIndex(specs[ci].fields,rel.childField)];
+    const pf=specs[pi].fields[fieldIndex(specs[pi].fields,rel.parentField)];
+    if(!cf||!pf){
+      alert('A relationship points to a missing field.');
+      return false;
+    }
+    if(!relationTypesCompatible(cf,pf)){
+      alert('The relationship '+rel.childTable+'.'+rel.childField+' → '+rel.parentTable+'.'+rel.parentField+' uses incompatible field types. A Number (whole) child is required for an AutoNumber parent.');
+      return false;
+    }
+  }
+  return true;
+}
+
+function relatedClosure(startIndex,specs){
+  const needed=new Set([startIndex]);
+  let changed=true;
+  while(changed){
+    changed=false;
+    REL.forEach(rel=>{
+      const ci=relationIndex(specs,rel.childTable);
+      const pi=relationIndex(specs,rel.parentTable);
+      if(needed.has(ci)&&!needed.has(pi)){
+        needed.add(pi);
+        changed=true;
+      }
+    });
+  }
+  return [...needed];
+}
+
+function buildTableData(specs,indices){
+  const rowsByIndex=Array(specs.length).fill(null);
+  indices.forEach(i=>{
+    rowsByIndex[i]=makeRowsFor(specs[i].rows,specs[i].fields,tableSeed(i));
+  });
+
+  for(let rIndex=0;rIndex<REL.length;rIndex++) {
+    const rel=REL[rIndex];
+    const ci=relationIndex(specs,rel.childTable);
+    const pi=relationIndex(specs,rel.parentTable);
+    if(!rowsByIndex[ci]||!rowsByIndex[pi])continue;
+
+    const cfi=fieldIndex(specs[ci].fields,rel.childField);
+    const pfi=fieldIndex(specs[pi].fields,rel.parentField);
+    const parentValues=rowsByIndex[pi].map(r=>r[pfi]).filter(v=>v!=null&&v!=='');
+    if(cfi<0||pfi<0||!parentValues.length)continue;
+
+    withSeed(seedHash(tableSeed(ci)+rIndex+17),()=>{
+      rowsByIndex[ci].forEach(row=>{
+        row[cfi]=parentValues[Math.floor(Math.random()*parentValues.length)];
+      });
+    });
   }
 
-  return out;
+  return rowsByIndex;
+}
+
+function lkValsFor(f,fs){
+  return lkVals(f);
 }
 
 function lkVals(f){
@@ -1711,7 +2232,8 @@ const disp=(v,f)=>
 
 function preview(){
 
-  const fs=active();
+  const allSpecs=snapshotSpecs(8);
+  const fs=allSpecs[activeTableIndex]?.fields||[];
 
   if(!fs.length){
 
@@ -1723,7 +2245,8 @@ function preview(){
     return;
   }
 
-  const rows=makeRows(8,fs);
+  const data=buildTableData(allSpecs,relatedClosure(activeTableIndex,allSpecs));
+  const rows=data[activeTableIndex]||[];
 
   $('preview').innerHTML=
     '<table><tr>'+
@@ -1761,51 +2284,94 @@ function download(name,text,mime){
   );
 }
 
-function needFields(){
+const ACCESS_RESERVED=new Set(
+  'ADD ALTER AND AS ASC BEGIN BETWEEN BY CASE CHAR CHARACTER CHECK COLUMN CONSTRAINT CREATE COUNTER DATABASE DATE DATETIME DELETE DESC DISTINCT DROP EXISTS FALSE FROM FULL GROUP HAVING IN INDEX INSERT INNER INTO JOIN LAST LIKE LONG MEMO NAME NOT NULL NUMBER ON OR ORDER OUTER PRIMARY REFERENCES SELECT SET TABLE TEXT TIME TRUE UNION UNIQUE UPDATE USER VALUE VALUES WHERE YESNO'.split(' ')
+);
 
-  const fs=active();
+function needFields(fsOverride=null,tableLabel='current table'){
+
+  const fs=fsOverride||active();
 
   if(!fs.length){
-    alert('Add at least one field.');
+    alert('Table "'+tableLabel+'" needs at least one field.');
+    return null;
+  }
+
+  if(fs.length>255){
+    alert('Table "'+tableLabel+'" has '+fs.length+' fields. Access supports a maximum of 255 fields per table.');
     return null;
   }
 
   const seen={};
   let an=0;
+  const reserved=[];
 
   for(const f of fs){
 
-    if(!f.col){
-      alert('Every field needs a name.');
+    const col=colName(f.name);
+
+    if(!col){
+      alert('Every field in table "'+tableLabel+'" needs a valid name.');
       return null;
     }
 
-    const k=f.col.toLowerCase();
+    if(col.length>64){
+      alert('Field "'+col.slice(0,32)+'..." in table "'+tableLabel+'" is longer than Access\'s 64-character name limit.');
+      return null;
+    }
+
+    const k=col.toLowerCase();
 
     if(seen[k]){
       alert(
-        'Two fields are named "'+
-        f.col+
+        'Two fields in table "'+tableLabel+'" are named "'+
+        col+
         '". Column names must be unique.'
       );
-
       return null;
     }
 
     seen[k]=1;
 
+    if(ACCESS_RESERVED.has(col.toUpperCase()))reserved.push(col);
     if(f.t==='an')an++;
   }
 
   if(an>1){
-    alert(
-      'Access allows only one AutoNumber field per table.'
-    );
-
+    alert('Access allows only one AutoNumber field per table.');
     return null;
   }
 
+  if(reserved.length){
+    toast('Note: reserved Access names used: '+reserved.join(', ')+'. They are bracket-escaped in generated SQL.',false);
+  }
+
   return fs;
+}
+
+function validateTables(specs){
+  const seen={};
+
+  for(const t of specs){
+    const raw=String(t.name||'');
+    if(!raw.trim()){
+      alert('Every table needs a name.');
+      return false;
+    }
+    if(t.name.length>64){
+      alert('Table "'+t.name.slice(0,32)+'..." is longer than Access\'s 64-character table-name limit.');
+      return false;
+    }
+    const k=t.name.toLowerCase();
+    if(seen[k]){
+      alert('Two tables are named "'+t.name+'". Table names must be unique.');
+      return false;
+    }
+    seen[k]=1;
+    if(!needFields(t.fields,t.name))return false;
+  }
+
+  return true;
 }
 
 const q=t=>
@@ -1841,8 +2407,12 @@ function enc(v,f){
     case 'yn':
       return v?-1:0;
 
-    case 'dt':
-      return '#'+v+'#';
+    case 'dt':{
+      const m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2}):(\d{2}))?$/);
+      if(!m)return 'NULL';
+      const y=+m[1],mo=+m[2],d=+m[3],hh=+(m[4]||0),mm=+(m[5]||0),ss=+(m[6]||0);
+      return 'DateSerial('+y+','+mo+','+d+')+'+(hh*3600+mm*60+ss)+'/86400';
+    }
 
     case 'hl':
       return q(v+'#'+v+'#');
@@ -1857,34 +2427,32 @@ function enc(v,f){
 
 $('btnGen').onclick=()=>{
 
-  const fs=needFields();
-
-  if(!fs)return;
+  saveActiveTable();
 
   const file=safeName($('fname').value);
-  const table=safeIdent($('tname').value);
   const fmt=$('fmt').value;
-  const rows=makeRows(getN(),fs);
+  const specs=TABLES.map(t=>({
+    name:safeIdent(t.name),
+    fields:t.fields.map(f=>({...f,col:colName(f.name)})),
+    rows:getN()
+  }));
 
-  let ins=[];
+  if(!specs.length){
+    alert('Add at least one table.');
+    return;
+  }
 
-  fs.forEach((f,k)=>{
-    if(f.t!=='an')ins.push(k);
-  });
+  if(!validateTables(specs))return;
+  if(!validateRelations(specs))return;
 
-  if(!ins.length)ins=[0];
+  if(specs.some(t=>t.fields.length===1&&t.fields[0].t==='an'&&t.rows>0)){
+    alert('A table containing only an AutoNumber field cannot be populated safely with normal INSERT statements. Add at least one non-AutoNumber field.');
+    return;
+  }
 
-  const create=
-    'CREATE TABLE ['+
-    table+
-    '] ('+
-    fs.map(f=>
-      '['+
-      f.col+
-      '] '+
-      sqlT(f)
-    ).join(', ')+
-    ')';
+  const seed=getSeed();
+  $('seed').value=seed;
+  const allData=buildTableData(specs,specs.map((_,i)=>i));
 
   const L=[
     "' Generated by Access DB Generator",
@@ -1892,15 +2460,8 @@ $('btnGen').onclick=()=>{
     'Dim fso, folder, dbPath, cat, cat2, conn, prov, provs, ok',
 
     'Set fso = CreateObject("Scripting.FileSystemObject")',
-
     'folder = fso.GetParentFolderName(WScript.ScriptFullName)',
-
-    'dbPath = folder & "\\'+
-      vq(file)+
-      '.'+
-      fmt+
-      '"',
-
+    'dbPath = folder & "\\'+vq(file)+'.'+fmt+'"',
     'If fso.FileExists(dbPath) Then fso.DeleteFile dbPath, True',
 
     fmt==='mdb'
@@ -1909,140 +2470,166 @@ $('btnGen').onclick=()=>{
 
     'ok = ""',
     'On Error Resume Next',
-
     'For Each prov In provs',
-
     '  Err.Clear',
-
     '  Set cat = CreateObject("ADOX.Catalog")',
-
     '  cat.Create "Provider=" & prov & ";Data Source=" & dbPath'+
-      (
-        fmt==='mdb'
-          ?' & ";Jet OLEDB:Engine Type=5"'
-          :''
-      ),
-
+      (fmt==='mdb'?' & ";Jet OLEDB:Engine Type=5"':'') ,
     '  If Err.Number = 0 Then ok = prov : Exit For',
-
     'Next',
-
     'On Error GoTo 0',
-
     'If ok = "" Then',
-
     '  Dim wow : wow = fso.GetSpecialFolder(0) & "\\SysWOW64\\wscript.exe"',
-
     '  If WScript.Arguments.Count = 0 And fso.FileExists(wow) Then',
-
     '    CreateObject("WScript.Shell").Run """" & wow & """ """ & WScript.ScriptFullName & """ x86", 1, True',
-
     '    WScript.Quit 0',
-
     '  End If',
-
     '  MsgBox "Could not create the database." & vbCrLf & "Install Microsoft Access or the Access Database Engine (ACE OLEDB).", 16, "Access DB Generator"',
-
     '  WScript.Quit 1',
-
     'End If',
-
+    'Set cat = Nothing',
+    'On Error Resume Next',
     'Set conn = CreateObject("ADODB.Connection")',
-
     'conn.Open "Provider=" & ok & ";Data Source=" & dbPath',
-
-    'conn.Execute "'+
-      vq(create)+
-      '"',
-
-    'conn.BeginTrans'
+    'If Err.Number <> 0 Then',
+    '  MsgBox "Could not open the database connection." & vbCrLf & Err.Description, 16, "Access DB Generator"',
+    '  WScript.Quit 1',
+    'End If',
+    'On Error GoTo 0'
   ];
 
-  const cl=
-    '['+
-    ins.map(k=>fs[k].col).join('], [')+
-    ']';
+  specs.forEach(t=>{
+    const fs=t.fields.map(f=>({
+      col:colName(f.name),t:f.t,gen:f.gen,min:f.min,max:f.max,
+      rangeCustom:!!f.rangeCustom,p:f.p,pid:f.pid
+    }));
+    const rows=allData[specs.indexOf(t)]||[];
+    const ins=[];
+    fs.forEach((f,k)=>{if(f.t!=='an')ins.push(k)});
 
-  rows.forEach(r=>{
+    const create='CREATE TABLE ['+t.name+'] ('+
+      fs.map(f=>'['+f.col+'] '+sqlT(f)).join(', ')+')';
 
-    L.push(
-      'conn.Execute "'+
-      vq(
-        'INSERT INTO ['+
-        table+
-        '] ('+
-        cl+
-        ') VALUES ('+
-        ins.map(k=>
-          enc(r[k],fs[k])
-        ).join(', ')+
-        ')'
-      )+
-      '"'
-    );
+    L.push('ExecSql conn, "'+vq(create)+'", "Create table '+vq(t.name)+'"');
+    L.push('BeginTx conn, "'+vq(t.name)+'"');
+
+    const cl='['+ins.map(k=>fs[k].col).join('], [')+']';
+    rows.forEach(r=>L.push(
+      'ExecSql conn, "'+vq(
+        'INSERT INTO ['+t.name+'] ('+cl+') VALUES ('+
+        ins.map(k=>enc(r[k],fs[k])).join(', ')+')'
+      )+'", "Insert row into '+vq(t.name)+'"'
+    ));
+    L.push('CommitTx conn, "'+vq(t.name)+'"');
+
+    const hls=fs.filter(f=>f.t==='hl');
+    if(hls.length){
+      L.push('On Error Resume Next','Set cat2 = CreateObject("ADOX.Catalog")','Set cat2.ActiveConnection = conn');
+      hls.forEach(f=>L.push(
+        'cat2.Tables("'+vq(t.name)+'").Columns("'+vq(f.col)+'").Properties("Jet OLEDB:Hyperlink").Value = True'
+      ));
+      L.push('On Error GoTo 0');
+    }
+
+    const lks=fs.filter(f=>f.t==='lk');
+    lks.forEach(f=>{
+      const v=lkValsFor(f,fs);
+      if(v.length){
+        const src=v.map(x=>'\"'+x.replace(/\"/g,'\"\"')+'\"').join(';');
+        L.push(
+          'MakeLookup dbPath, "'+vq(t.name)+'", "'+vq(f.col)+'", "'+vq(src)+'"'
+        );
+      }
+    });
+
   });
 
-  L.push(
-    'conn.CommitTrans'
-  );
-
-  const hls=fs.filter(f=>f.t==='hl');
-
-  if(hls.length){
-
+  if(REL.length){
     L.push(
-      'On Error Resume Next',
       'Set cat2 = CreateObject("ADOX.Catalog")',
       'Set cat2.ActiveConnection = conn'
     );
-
-    hls.forEach(f=>
+    REL.forEach(rel=>{
       L.push(
-        'cat2.Tables("'+
-        vq(table)+
-        '").Columns("'+
-        vq(f.col)+
-        '").Properties("Jet OLEDB:Hyperlink").Value = True'
-      )
-    );
-
-    L.push(
-      'On Error GoTo 0'
-    );
+        'AddForeignKey cat2, "'+vq(rel.childTable)+'", "'+vq(rel.childField)+'", "'+vq(rel.parentTable)+'", "'+vq(rel.parentField)+'"'
+      );
+    });
+    L.push('Set cat2.ActiveConnection = Nothing','Set cat2 = Nothing');
   }
 
   L.push(
-    'conn.Close'
+    'conn.Close',
+    'MsgBox "Created " & dbPath & vbCrLf & "Tables: '+specs.map(t=>t.name).join(', ')+'" & vbCrLf & "Relationships: '+String(REL.length)+'", 64, "Access DB Generator"',
+    'WScript.Quit 0',
+    '',
+    'Sub ExecSql(c, s, context)',
+    '  Dim en, ed',
+    '  On Error Resume Next',
+    '  Err.Clear',
+    '  c.Execute s',
+    '  en = Err.Number : ed = Err.Description',
+    '  On Error GoTo 0',
+    '  If en <> 0 Then',
+    '    On Error Resume Next',
+    '    c.RollbackTrans',
+    '    c.Close',
+    '    MsgBox context & vbCrLf & "Error " & en & ": " & ed, 16, "Access DB Generator"',
+    '    WScript.Quit 1',
+    '  End If',
+    'End Sub',
+    '',
+    'Sub AddForeignKey(cat, childT, childC, parentT, parentC)',
+    '  Dim ky, en, ed',
+    '  On Error Resume Next',
+    '  Err.Clear',
+    '  Set ky = CreateObject("ADOX.Key")',
+    '  ky.Name = "FK_" & childT & "_" & childC',
+    '  ky.Type = 2',
+    '  ky.RelatedTable = parentT',
+    '  ky.Columns.Append childC',
+    '  ky.Columns(childC).RelatedColumn = parentC',
+    '  cat.Tables(childT).Keys.Append ky',
+    '  en = Err.Number : ed = Err.Description',
+    '  On Error GoTo 0',
+    '  If en <> 0 Then',
+    '    MsgBox "Could not create relationship " & childT & "." & childC & " -> " & parentT & "." & parentC & vbCrLf & ed, 48, "Access DB Generator"',
+    '    WScript.Quit 1',
+    '  End If',
+    'End Sub',
+    '',
+    'Sub BeginTx(c, context)',
+    '  Dim en, ed',
+    '  On Error Resume Next',
+    '  Err.Clear',
+    '  c.BeginTrans',
+    '  en = Err.Number : ed = Err.Description',
+    '  On Error GoTo 0',
+    '  If en <> 0 Then',
+    '    c.Close',
+    '    MsgBox "Could not start transaction for " & context & vbCrLf & ed, 16, "Access DB Generator"',
+    '    WScript.Quit 1',
+    '  End If',
+    'End Sub',
+    '',
+    'Sub CommitTx(c, context)',
+    '  Dim en, ed',
+    '  On Error Resume Next',
+    '  Err.Clear',
+    '  c.CommitTrans',
+    '  en = Err.Number : ed = Err.Description',
+    '  On Error GoTo 0',
+    '  If en <> 0 Then',
+    '    On Error Resume Next',
+    '    c.RollbackTrans',
+    '    c.Close',
+    '    MsgBox "Could not commit transaction for " & context & vbCrLf & ed, 16, "Access DB Generator"',
+    '    WScript.Quit 1',
+    '  End If',
+    'End Sub'
   );
 
-  const lks=fs.filter(f=>f.t==='lk');
-
-  lks.forEach(f=>{
-
-    const v=lkVals(f);
-
-    if(v.length){
-
-      L.push(
-        'MakeLookup dbPath, "'+
-        vq(table)+
-        '", "'+
-        vq(f.col)+
-        '", "'+
-        '""'+
-        v.join('"";""')+
-        '""'+'"'
-      );
-    }
-  });
-
-  L.push(
-    'MsgBox "Created " & dbPath & vbCrLf & "Table: '+vq(table)+' ('+rows.length+' rows)", 64, "Access DB Generator"',
-    'WScript.Quit 0'
-  );
-
-  if(lks.length){
-
+  const anyLookup=specs.some(t=>t.fields.some(f=>f.t==='lk'));
+  if(anyLookup){
     L.push(
       'Sub MakeLookup(dbPath, t, c, src)',
       '  Dim dbe, db, fld, p',
@@ -2059,11 +2646,7 @@ $('btnGen').onclick=()=>{
     );
   }
 
-  download(
-    file+'_builder.vbs',
-    L.join('\r\n')+'\r\n',
-    'text/vbscript'
-  );
+  download(file+'_builder.vbs',L.join('\r\n')+'\r\n','text/vbscript');
 };
 
 
@@ -2071,9 +2654,14 @@ $('btnGen').onclick=()=>{
 
 $('btnCsv').onclick=()=>{
 
-  const fs=needFields();
+  const specs=snapshotSpecs(getN());
+  const fs=specs[activeTableIndex]?.fields||[];
 
-  if(!fs)return;
+  if(!needFields(fs,safeIdent(TABLES[activeTableIndex]?.name||'current table')))return;
+  if(!validateRelations(specs))return;
+
+  const data=buildTableData(specs,relatedClosure(activeTableIndex,specs));
+  const rows=data[activeTableIndex]||[];
 
   const ce=v=>{
 
@@ -2087,7 +2675,7 @@ $('btnCsv').onclick=()=>{
   const out=[
     fs.map(f=>ce(f.col)).join(',')
   ].concat(
-    makeRows(getN(),fs).map(r=>
+    rows.map(r=>
       r.map((v,k)=>
         ce(disp(v,fs[k]))
       ).join(',')
@@ -2101,33 +2689,213 @@ $('btnCsv').onclick=()=>{
   );
 };
 
-$('btnPrev').onclick=preview;
+$('btnPrev').onclick=()=>{
+  const cur=getSeed();
+  $('seed').value=cur>=MAX_SEED?1:cur+1;
+  preview();
+};
 
+
+/* ----- project save/load/reset ----- */
+
+function currentProject(){
+  saveActiveTable();
+  return{
+    version:2,
+    database:{
+      fileName:$('fname').value,
+      format:$('fmt').value,
+      rows:getN()
+    },
+    data:{
+      blank:Math.max(0,Math.min(90,parseInt($('blank').value)||0)),
+      genders:$('genders').value,
+      roles:$('roles').value,
+      locations:$('locs').value,
+      seed:getSeed()
+    },
+    namingStyle:$('nstyle').value,
+    category:cat,
+    activeTable:activeTableIndex,
+    relationships:REL.map(r=>({...r})),
+    tables:TABLES.map(t=>({
+      name:t.name,
+      fields:t.fields.map(f=>{
+        const x={...f};
+        delete x.isNew;
+        return x;
+      })
+    }))
+  };
+}
+
+function normalizeProject(data){
+  if(!data||!Array.isArray(data.tables)||!data.tables.length){
+    throw new Error('The project file does not contain any tables.');
+  }
+
+  const tables=data.tables.map((t,i)=>{
+    const name=validObjectName(t.name)||'Table'+(i+1);
+    if(!Array.isArray(t.fields))throw new Error('Table "'+name+'" has no field list.');
+
+    const fields=t.fields.map(f=>{
+      const tpe=TY.some(x=>x[0]===f.t)?f.t:'st';
+      const gen=GEN[f.gen]?f.gen:DEF[tpe];
+      const x={
+        name:String(f.name??''),
+        t:tpe,
+        gen:gen,
+        p:f.p,
+        pid:f.pid,
+        rangeCustom:!!f.rangeCustom
+      };
+      if(NUM_TYPES.has(tpe)){
+        const rr=defaultRangeForField(x);
+        x.min=Number.isFinite(Number(f.min))?Number(f.min):rr[0];
+        x.max=Number.isFinite(Number(f.max))?Number(f.max):rr[1];
+      }
+      return x;
+    });
+
+    return{name:name,fields:fields};
+  });
+
+  const used={};
+  tables.forEach((t,i)=>{
+    const base=t.name||'Table'+(i+1);
+    let name=base;
+    let n=2;
+    while(used[name.toLowerCase()]){
+      const suffix=String(n++);
+      name=(base.slice(0,Math.max(1,64-suffix.length))+suffix).trim();
+    }
+    t.name=name;
+    used[name.toLowerCase()]=1;
+  });
+
+  const relationships=Array.isArray(data.relationships)?data.relationships.map(r=>({
+    childTable:String(r.childTable||''),
+    childField:String(r.childField||''),
+    parentTable:String(r.parentTable||''),
+    parentField:String(r.parentField||'')
+  })).filter(r=>r.childTable&&r.childField&&r.parentTable&&r.parentField):[];
+
+  return{
+    fileName:safeName(data.database?.fileName||'SampleDB'),
+    format:data.database?.format==='accdb'?'accdb':'mdb',
+    rows:Math.min(50000,Math.max(1,parseInt(data.database?.rows)||100)),
+    blank:Math.max(0,Math.min(90,parseInt(data.data?.blank)||0)),
+    genders:String(data.data?.genders??'Male, Female'),
+    roles:String(data.data?.roles??'Admin, Manager, Staff, Supervisor, Clerk, Developer, Analyst'),
+    locations:String(data.data?.locations??'Manila, Quezon City, Cebu City, Davao City, San Fernando, Angeles, Baguio, Iloilo City'),
+    seed:Number.isFinite(Number(data.data?.seed))&&Number(data.data.seed)>0?Math.min(MAX_SEED,Number(data.data.seed)):DEFAULT_SEED,
+    namingStyle:['pascal','snake','spaced','upper'].includes(data.namingStyle)?data.namingStyle:'pascal',
+    category:Math.max(0,Math.min(CATS.length-1,parseInt(data.category)||0)),
+    activeTable:Math.max(0,Math.min(tables.length-1,parseInt(data.activeTable)||0)),
+    relationships:relationships,
+    tables:tables
+  };
+}
+
+$('saveProject').onclick=()=>{
+  const data=JSON.stringify(currentProject(),null,2);
+  download(safeName($('fname').value)+'_project.json',data,'application/json');
+};
+
+$('loadProject').onclick=()=>$('projectFile').click();
+
+$('projectFile').onchange=e=>{
+  const file=e.target.files?.[0];
+  if(!file)return;
+
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=normalizeProject(JSON.parse(reader.result));
+      TABLES=data.tables;
+      REL=data.relationships;
+      activeTableIndex=data.activeTable;
+      F=TABLES[activeTableIndex].fields;
+      cat=data.category;
+
+      $('fname').value=data.fileName;
+      $('fmt').value=data.format;
+      $('rows').value=data.rows;
+      $('blank').value=data.blank;
+      $('genders').value=data.genders;
+      $('roles').value=data.roles;
+      $('locs').value=data.locations;
+      $('seed').value=data.seed;
+      $('nstyle').value=data.namingStyle;
+      $('tname').value=TABLES[activeTableIndex].name;
+
+      drawTabs();
+      drawChips();
+      render(false);
+      renderTableManager();
+      renderRelations();
+      preview();
+      updateFix();
+      toast('Project loaded: '+TABLES.length+' table'+(TABLES.length===1?'':'s')+'.',false);
+    }catch(err){
+      alert('Could not load project: '+err.message);
+    }finally{
+      e.target.value='';
+    }
+  };
+  reader.readAsText(file);
+};
+
+$('resetProject').onclick=()=>{
+  if(!confirm('Reset the generator to its default project? Unsaved editor changes will be lost.'))return;
+
+  TABLES=[{name:'People',fields:[
+    {name:'FirstName',t:'st',gen:'first',p:'First Name',pid:'First Name',rangeCustom:false},
+    {name:'LastName',t:'st',gen:'last',p:'Last Name',pid:'Last Name',rangeCustom:false}
+  ]}];
+  activeTableIndex=0;
+  F=TABLES[0].fields;
+  REL=[];
+  cat=0;
+
+  $('fname').value='SampleDB';
+  $('fmt').value='mdb';
+  $('rows').value=100;
+  $('blank').value=0;
+  $('genders').value='Male, Female';
+  $('roles').value='Admin, Manager, Staff, Supervisor, Clerk, Developer, Analyst';
+  $('locs').value='Manila, Quezon City, Cebu City, Davao City, San Fernando, Angeles, Baguio, Iloilo City';
+  $('seed').value=DEFAULT_SEED;
+  $('nstyle').value='pascal';
+  $('tname').value='People';
+
+  drawTabs();
+  drawChips();
+  render(false);
+  renderTableManager();
+  renderRelations();
+  preview();
+  updateFix();
+  toast('Generator reset.',false);
+};
 
 /* ----- initial fields ----- */
 
-F=[
-  {
-    name:'FirstName',
-    t:'st',
-    gen:'first',
-    p:'First Name',
-    pid:'First Name',
-    rangeCustom:false
-  },
-  {
-    name:'LastName',
-    t:'st',
-    gen:'last',
-    p:'Last Name',
-    pid:'Last Name',
-    rangeCustom:false
-  }
-];
+TABLES=[{
+  name:'People',
+  fields:[
+    {name:'FirstName',t:'st',gen:'first',p:'First Name',pid:'First Name',rangeCustom:false},
+    {name:'LastName',t:'st',gen:'last',p:'Last Name',pid:'Last Name',rangeCustom:false}
+  ]
+}];
 
+F=TABLES[0].fields;
+$('tname').value=TABLES[0].name;
 drawTabs();
 drawChips();
 render(false);
+renderTableManager();
+renderRelations();
 
 
 /* ===== interactivity & animation ===== */
@@ -2351,7 +3119,7 @@ function afterPreview(fs){
   const n=getN();
 
   const smp=
-    makeRows(8,fs);
+    buildTableData(snapshotSpecs(8),relatedClosure(activeTableIndex,snapshotSpecs(8)))[activeTableIndex]||[];
 
   const avg=
     fs.length
@@ -2394,9 +3162,7 @@ function afterPreview(fs){
   );
 
   const t=
-    safeIdent(
-      $('tname').value
-    );
+    tableName();
 
   const sql=
     fs.length
