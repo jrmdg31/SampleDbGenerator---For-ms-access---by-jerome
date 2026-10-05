@@ -593,9 +593,70 @@ const safeName=t=>{
 const validObjectName=t=>clean(String(t)).replace(/[^A-Za-z0-9_ ]/g,'').trim().slice(0,64);
 const safeIdent=t=>validObjectName(t)||'People';
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const FM=['James','John','Mark','Paul','Daniel','Michael','Joseph','Carlo','Miguel','Rafael','Angelo','Jose','Luis','Gabriel','Nathan'];
-const FF=['Maria','Anna','Grace','Sofia','Isabel','Angela','Patricia','Kristine','Jasmine','Clarisse','Nicole','Rose','Camille','Lea','Bianca'];
-const LAST=['Santos','Reyes','Cruz','Bautista','Garcia','Mendoza','Torres','Flores','Ramos','Aquino','Castillo','Villanueva','Navarro','Dela Cruz','Domingo','Pascual','Salazar','Rivera','Lopez','Gonzales'];
+/*
+  International name pools.
+  Names are grouped so first-name/surname combinations stay reasonably
+  plausible instead of randomly mixing every culture with every surname.
+  The combined regional catalogue contains well over 50,000 unique pairs.
+*/
+const N=s=>s.split('|').map(x=>x.trim()).filter(Boolean);
+
+const NAME_REGIONS=[
+  {
+    id:'Western',
+    male:N('James|John|Michael|David|Daniel|Matthew|Christopher|Andrew|Anthony|Benjamin|William|Joseph|Thomas|Robert|Charles|Richard|Edward|George|Henry|Samuel|Jack|Harry|Oliver|Noah|Liam|Lucas|Ethan|Jacob|Logan|Mason|Alexander|Adam|Adrian|Aaron|Ryan|Dylan|Nathan|Nicholas|Jonathan|Jordan|Justin|Jason|Kevin|Brian|Brandon|Cameron|Connor|Caleb|Austin|Tyler|Zachary|Nathaniel|Isaac|Owen|Evan|Luke|Levi|Wyatt|Hunter|Cole|Blake|Elliot|Max'),
+    female:N('Emma|Olivia|Ava|Sophia|Isabella|Mia|Charlotte|Amelia|Harper|Evelyn|Abigail|Emily|Elizabeth|Sofia|Ella|Scarlett|Victoria|Grace|Chloe|Camila|Penelope|Riley|Layla|Lillian|Nora|Zoey|Mila|Aubrey|Hannah|Lily|Addison|Eleanor|Natalie|Luna|Savannah|Brooklyn|Leah|Zoe|Audrey|Claire|Lucy|Anna|Caroline|Nova|Genesis|Emilia|Kennedy|Samantha|Maya|Willow|Kinsley|Naomi|Elena|Sarah|Ariana|Allison|Alice|Madeline|Cora|Ruby|Eva|Peyton|Quinn|Ivy|Jasmine'),
+    last:N('Smith|Johnson|Williams|Brown|Jones|Miller|Davis|Wilson|Anderson|Taylor|Thomas|Moore|Martin|Jackson|Thompson|White|Harris|Clark|Lewis|Walker|Hall|Allen|Young|King|Wright|Scott|Green|Baker|Adams|Nelson|Carter|Mitchell|Perez|Roberts|Turner|Phillips|Campbell|Parker|Evans|Edwards|Collins|Stewart|Sanchez|Morris|Rogers|Reed|Cook|Morgan|Bell|Murphy|Bailey|Rivera|Cooper|Richardson|Cox|Howard|Ward|Torres|Peterson|Gray|Ramirez|James|Watson|Brooks|Kelly|Sanders')
+  },
+  {
+    id:'European',
+    male:N('Lukas|Luca|Matteo|Marco|Leon|Felix|Maximilian|Niklas|Jonas|Finn|Hugo|Louis|Arthur|Theo|Antoine|Gabriel|Adrien|Bastien|Julien|Pierre|Luc|Nicolas|Etienne|Henri|Hector|Diego|Carlos|Javier|Sergio|Miguel|Alejandro|Pablo|Alvaro|Mateo|Tiago|Joao|Andre|Nuno|Marek|Jakub|Pawel|Kamil|Mateusz|Piotr|Tomasz|Jan|Milan|Luka|Ivan|Nikola|Stefan|Andrej|Viktor|Dmitri|Nikolai|Alexei|Mikhail|Soren|Emil|Leif|Magnus|Erik|Oskar'),
+    female:N('Emma|Mia|Lena|Clara|Sophie|Sofie|Anna|Hannah|Leonie|Lina|Ella|Greta|Freya|Astrid|Ingrid|Solveig|Nora|Elin|Elsa|Alma|Sofia|Giulia|Chiara|Francesca|Elisa|Martina|Beatrice|Valentina|Lucia|Arianna|Camilla|Giada|Amelie|Camille|Chloe|Manon|Juliette|Margot|Colette|Louise|Helene|Ines|Irene|Carmen|Teresa|Marta|Sonia|Elena|Ana|Marina|Sara|Klara|Zuzana|Katarina|Aneta|Magdalena|Ewa|Ola|Milena|Ivana|Jelena|Anastasia|Svetlana|Alina|Viktoria'),
+    last:N('Muller|Schmidt|Schneider|Fischer|Weber|Meyer|Wagner|Becker|Schulz|Hoffmann|Koch|Richter|Wolf|Schroder|Neumann|Zimmermann|Braun|Kruger|Hartmann|Lange|Rossi|Russo|Ferrari|Esposito|Bianchi|Romano|Colombo|Ricci|Marino|Greco|Moretti|Conti|De Luca|Costa|Gallo|Mancini|Lombardi|Barbieri|Fontana|Santoro|Dubois|Moreau|Laurent|Simon|Michel|Lefebvre|Garcia|Fernandez|Gonzalez|Rodriguez|Martinez|Lopez|Sanchez|Martin|Perez|Gomez|Santos|Navarro|Moreno|Vega|Romero|Kowalski|Nowak|Wojcik|Kaminski|Lewandowski|Jankovic|Petrov|Ivanov|Kozlov')
+  },
+  {
+    id:'East Asian',
+    male:N('Wei|Ming|Jun|Jian|Hao|Tao|Lei|Chen|Bo|Kai|Jie|Yang|Qiang|Peng|Long|Zhi|Yun|Han|Shun|Hiroshi|Haruto|Yuto|Sota|Ren|Kaito|Riku|Daiki|Takumi|Ryota|Kenta|Shota|Naoki|Kenji|Takeshi|Akira|Yuki|Minato|Hayato|Itsuki|Koki|Ryo|Joon|Jiho|Minjun|Seojun|Hyunwoo|Donghyun|Junseo|Jisoo|Taeyang|Sungmin|Woobin|Jinwoo|Youngmin|Hyeon|Seungwoo|Minseok|Daeho|Eunwoo|Thanh|Minh|Duc|Quang|Huy|Nam|Bao|Khanh|Tuan|Phuong'),
+    female:N('Mei|Ling|Li|Xia|Xinyi|Ying|Jing|Hui|Yan|Qian|Na|Jia|Lin|Xin|Yue|Yun|Hana|Yui|Aoi|Sakura|Akari|Mio|Rin|Hina|Yuna|Riko|Saki|Nana|Miku|Ayaka|Emi|Kaori|Haruka|Nanami|Aiko|Koharu|Momoka|Rei|Sora|Minji|Seoyeon|Jiyoon|Sumin|Jisoo|Chaeyoung|Hyejin|Eunji|Sooyoung|Ara|Nayeon|Dahye|Bora|Hyeri|Mina|Haeun|Jina|Nari|My|Linh|Anh|Trang|Ngoc|Thao|Huong|Mai|Lan|Vy'),
+    last:N('Wang|Li|Zhang|Liu|Chen|Yang|Huang|Zhao|Wu|Zhou|Xu|Sun|Ma|Zhu|Hu|Guo|He|Gao|Lin|Luo|Han|Shen|Deng|Feng|Cao|Peng|Xie|Tang|Pan|Kawasaki|Sato|Suzuki|Takahashi|Tanaka|Watanabe|Ito|Yamamoto|Nakamura|Kobayashi|Kato|Yoshida|Yamada|Sasaki|Yamaguchi|Matsumoto|Inoue|Kim|Lee|Park|Choi|Jung|Kang|Cho|Yoon|Jang|Lim|Shin|Seo|Kwon|Hwang|Moon|Jeong|Nguyen|Tran|Le|Pham|Huynh|Vo|Vu|Dang|Bui|Do|Hoang|Ngo')
+  },
+  {
+    id:'South Asian',
+    male:N('Aarav|Arjun|Ayaan|Aditya|Vihaan|Rohan|Rahul|Raj|Ravi|Karan|Arnav|Dhruv|Kabir|Ishaan|Vivaan|Reyansh|Aman|Akash|Varun|Nikhil|Vivek|Siddharth|Sameer|Anand|Manish|Rajat|Sanjay|Vikram|Pranav|Dev|Aryan|Krish|Yash|Harsh|Mohit|Suresh|Dinesh|Ramesh|Ashwin|Naveen|Imran|Farhan|Zain|Hamza|Danish|Faizan|Bilal|Usman|Omar|Rehan|Adeel|Saad|Tariq|Ahsan|Ibrahim|Arif|Nadeem|Faisal|Rizwan|Anirudh|Abhinav|Kunal|Rohit|Gautam|Kabeer'),
+    female:N('Aanya|Aadhya|Ananya|Diya|Isha|Ishita|Myra|Kiara|Anika|Avni|Riya|Tara|Meera|Kavya|Nisha|Pooja|Priya|Neha|Sneha|Rhea|Sana|Maya|Aditi|Shruti|Shreya|Simran|Kiran|Nandini|Divya|Ira|Aarohi|Vanya|Navya|Sia|Pari|Zara|Alina|Ayesha|Fatima|Hira|Mahira|Inaya|Mariam|Amina|Zainab|Noor|Hafsa|Laiba|Sadia|Rabia|Maha|Iqra|Anam|Areeba|Komal|Muskan|Roshni|Sonal|Kritika|Pallavi|Swati|Tanvi|Mansi|Bhavna'),
+    last:N('Sharma|Verma|Patel|Shah|Mehta|Desai|Kapoor|Malhotra|Singh|Kaur|Khan|Ahmed|Ali|Hussain|Sheikh|Siddiqui|Qureshi|Mirza|Malik|Farooq|Chopra|Bhatia|Arora|Agarwal|Gupta|Joshi|Reddy|Rao|Iyer|Nair|Menon|Pillai|Das|Sen|Banerjee|Mukherjee|Chatterjee|Roy|Bose|Ghosh|Chowdhury|Rahman|Karim|Haque|Islam|Hossain|Begum|Perera|Fernando|Silva|Jayasinghe|Wijesinghe|Kumar|Mishra|Pandey|Tiwari|Yadav|Basu|Sarkar|Dutta|Sinha|Bhattacharya|Nayak|Kulkarni|Deshpande|Jadhav')
+  },
+  {
+    id:'Middle Eastern',
+    male:N('Mohammed|Muhammad|Ahmed|Omar|Ali|Hassan|Hussein|Youssef|Yusuf|Ibrahim|Ismail|Khalid|Khaled|Karim|Samir|Tarek|Tariq|Nabil|Fadi|Rami|Adel|Amir|Sami|Zaid|Zain|Bilal|Faris|Majid|Walid|Hadi|Mazen|Nasser|Othman|Osman|Mustafa|Murad|Faisal|Salman|Hamid|Reza|Arman|Dariush|Kian|Navid|Farhad|Soroush|Mehdi|Arash|Omid|Cem|Emre|Kerem|Mert|Burak|Eren|Hakan|Can|Tolga|Baran|Yasin|Efe|David|Daniel|Noam|Eitan|Ariel|Yonatan|Itai|Eli'),
+    female:N('Aisha|Ayesha|Fatima|Maryam|Mariam|Layla|Leila|Laila|Noor|Nour|Hana|Hanaa|Salma|Sara|Sarah|Zainab|Zahra|Yasmin|Yasmine|Mona|Dina|Rana|Lina|Rania|Reem|Dalia|Huda|Hiba|Nadia|Nadine|Maha|Mai|Aya|Amal|Hanan|Iman|Sahar|Farah|Lama|Rasha|Samar|Jana|Joud|Dana|Ayla|Elif|Defne|Zeynep|Ece|Ceren|Selin|Derya|Merve|Esra|Buse|Sila|Asli|Nehir|Yara|Shirin|Parisa|Nazanin|Mitra|Niloofar|Laleh|Tamar'),
+    last:N('Haddad|Khalil|Mansour|Nasser|Hassan|Hussein|Rahman|Farah|Saleh|Salem|Hamdan|Khatib|Khoury|Saad|Fahmy|Moussa|Younes|Darwish|Mahmoud|Abbas|Odeh|Najjar|Hariri|Maalouf|Nasr|Jaber|Karim|Qasim|Bakr|Saeed|Hashim|Hameed|Ibrahim|Khalifa|Sultan|Rashid|Alam|Aziz|Jafari|Moradi|Farhadi|Rahimi|Karimi|Ahmadi|Hosseini|Rezaei|Kazemi|Mohammadi|Sadeghi|Nouri|Taheri|Bahrami|Asadi|Yilmaz|Kaya|Demir|Sahin|Aydin|Arslan|Koc|Ozkan|Celik|Polat|Dogan|Kurt|Acar|Cohen|Levi|Mizrahi')
+  },
+  {
+    id:'Southeast Asian',
+    male:N('Jose|Miguel|Rafael|Juan|Carlo|Angelo|Luis|Gabriel|Paolo|Marco|Andrei|Adrian|Nico|Enzo|Renz|Jerome|Nathan|Christian|Daniel|Joshua|Ethan|Aaron|Lance|Ramon|Diego|Antonio|Mateo|Jasper|Noel|Jovan|Arif|Budi|Dimas|Fajar|Rizky|Agus|Bagus|Dewa|Putra|Surya|Bayu|Eko|Andi|Hendra|Ilham|Rafi|Fahmi|Ananda|Chai|Narin|Thanawat|Kittisak|Anan|Somchai|Preecha|Pakorn|Suriya|Minh|Huy|Tuan|Bao|Kiet|Long|Sokha|Vannak|Dara|Vuthy'),
+    female:N('Maria|Angela|Camille|Bianca|Isabel|Patricia|Sofia|Lea|Nicole|Jasmine|Clarisse|Grace|Kristine|Ariana|Mikaela|Andrea|Carla|Bea|Nadine|Trisha|Mae|Janelle|Katrina|Danica|Rica|Jessa|Dianne|Aileen|Yasmin|Alya|Nadia|Putri|Siti|Ayu|Dewi|Indah|Rani|Maya|Intan|Wulan|Nisa|Aulia|Anisa|Sari|Ratih|Chariya|Sirin|Pim|Nicha|Kanya|Mayuree|Malee|Lalita|Nong|Dao|Mai|Linh|Thuy|Anh|Trang|Ngoc|Huong|Srey|Sophea|Dara|Bopha|Maly'),
+    last:N('Santos|Reyes|Garcia|Cruz|Bautista|Mendoza|Torres|Flores|Ramos|Aquino|Castillo|Villanueva|Navarro|Domingo|Pascual|Salazar|Rivera|Lopez|Gonzales|Dela Cruz|De Leon|De Guzman|Ong|Tan|Lim|Sy|Go|Chua|Co|Uy|Yap|Wijaya|Santoso|Hidayat|Pratama|Putra|Saputra|Sari|Setiawan|Wibowo|Kurniawan|Hakim|Nugroho|Maulana|Anwar|Rahman|Siregar|Lestari|Sukma|Srisuk|Sukhum|Chaiyaporn|Wong|Lee|Ng|Ho|Goh|Low|Teo|Chew|Koh|Phan|Vo|Tran|Nguyen|Le|Bui|Sok|Chan')
+  },
+  {
+    id:'Latin American',
+    male:N('Alejandro|Carlos|Daniel|Diego|Fernando|Francisco|Gabriel|Javier|Jose|Juan|Luis|Miguel|Mateo|Nicolas|Pablo|Rafael|Ricardo|Santiago|Sebastian|Andres|Antonio|Eduardo|Emiliano|Enrique|Esteban|Felipe|Gustavo|Hector|Ivan|Joaquin|Leonardo|Manuel|Marco|Martin|Mauricio|Oscar|Pedro|Ramon|Rodrigo|Samuel|Sergio|Tomas|Victor|Bruno|Dario|Fabian|Julio|Maximiliano|Agustin|Thiago|Matias|Cristian|Damian|Valentin|Gael|Iker|Alonso|Axel|Benicio|Dylan|Elian|Emmanuel'),
+    female:N('Sofia|Valentina|Camila|Isabella|Maria|Gabriela|Lucia|Martina|Elena|Catalina|Daniela|Carolina|Mariana|Valeria|Natalia|Andrea|Paula|Fernanda|Alejandra|Julieta|Renata|Victoria|Sara|Clara|Emilia|Antonella|Jimena|Ximena|Regina|Adriana|Laura|Ana|Carmen|Elisa|Florencia|Pilar|Romina|Rocio|Bianca|Cecilia|Fatima|Marisol|Monica|Patricia|Veronica|Diana|Carla|Luna|Alma|Abril|Aitana|Maite|Violeta|Mia|Zoe|Josefina|Agustina|Sol|Lola|Nayara|Isabel|Teresa|Noelia'),
+    last:N('Garcia|Rodriguez|Martinez|Hernandez|Lopez|Gonzalez|Perez|Sanchez|Ramirez|Torres|Flores|Rivera|Gomez|Diaz|Cruz|Morales|Ortiz|Gutierrez|Chavez|Ramos|Vazquez|Mendoza|Castillo|Jimenez|Moreno|Romero|Navarro|Alvarez|Ruiz|Fernandez|Munoz|Serrano|Ortega|Delgado|Castro|Rubio|Molina|Suarez|Blanco|Duran|Iglesias|Prieto|Pena|Cabrera|Campos|Vega|Fuentes|Santiago|Reyes|Rojas|Mejia|Mendez|Silva|Valdez|Vargas|Pacheco|Escobar|Montoya|Cardenas|Salazar|Acosta|Medina|Bravo|Miranda|Mora|Soto')
+  }
+];
+
+const FM=[...new Set(NAME_REGIONS.flatMap(r=>r.male))];
+const FF=[...new Set(NAME_REGIONS.flatMap(r=>r.female))];
+const LAST=[...new Set(NAME_REGIONS.flatMap(r=>r.last))];
+
+const NAME_PAIRS=[...new Map(NAME_REGIONS.flatMap(r=>{
+  const pairs=[];
+  [...new Set(r.male)].forEach(first=>[...new Set(r.last)].forEach(last=>pairs.push({first,last,sex:'M',region:r.id})));
+  [...new Set(r.female)].forEach(first=>[...new Set(r.last)].forEach(last=>pairs.push({first,last,sex:'F',region:r.id})));
+  return pairs;
+}).map(p=>[p.first+'\u0000'+p.last,p])).values()];
+
 const WORDS=['alpha','bravo','coffee','delta','echo','matrix','nova','orbit','pixel','quartz'];
 const SENT=['Follow up with the client next week.','Needs review before the end of the month.','Everything looks good so far.','Waiting on approval from the manager.'];
 const STREET=['Rizal','Mabini','Bonifacio','Luna','Del Pilar','Quezon','Aguinaldo'];
@@ -732,7 +793,7 @@ const GEN={
 
   first:['First name','st',c=>c.first],
   last:['Last name','st',c=>c.last],
-  mid:['Middle name','st',()=>P(LAST)],
+  mid:['Middle name','st',c=>c.sex==='M'?P(FM):c.sex==='F'?P(FF):P(LAST)],
   init:['Middle initial','st',()=>P('ABCDEFGHJKLMNPRSTW'.split(''))],
 
   prefix:['Prefix','st',()=>P(['Mr.','Ms.','Mrs.','Dr.','Hon.','Engr.'])],
@@ -2096,15 +2157,48 @@ function tableSeed(index){
   return seedHash(getSeed()+((index+1)*2654435761));
 }
 
+function gcd(a,b){
+  while(b){
+    const t=a%b;
+    a=b;
+    b=t;
+  }
+  return Math.abs(a);
+}
+
+function coprimeStep(n){
+  if(n<=1)return 1;
+  let step=I(1,n-1);
+  let guard=0;
+  while(gcd(step,n)!==1&&guard++<100)step=I(1,n-1);
+  if(gcd(step,n)!==1){
+    step=1;
+    while(step<n&&gcd(step,n)!==1)step++;
+  }
+  return step<n?step:1;
+}
+
 function makeRowsFor(n,fs,seed){
   const build=()=>{
     const O=opt(n);
     const b=(+$('blank').value||0)/100;
     const out=[];
-    const all=FM.concat(FF);
+    const pairs=NAME_PAIRS;
+    const combos=pairs.length;
+
+    /*
+      Use a modular permutation of the region-matched name-pair catalogue.
+      Every row gets a different first-name/surname pair until the catalogue
+      is exhausted, without allocating or shuffling a huge array on every
+      preview refresh.
+    */
+    const step=coprimeStep(combos);
+    const offset=I(0,Math.max(0,combos-1));
 
     for(let i=1;i<=n;i++){
-      const c={first:P(all),last:P(LAST)};
+      const pairIndex=(offset+((i-1)*step))%combos;
+      const base=pairs[pairIndex];
+      const c={...base};
       out.push(fs.map(f=>{
         if(f.t==='an')return i;
         if(f.t==='ole')return null;
